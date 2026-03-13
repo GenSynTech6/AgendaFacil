@@ -342,7 +342,7 @@
                 document.getElementById("bloqueio-pagamento").classList.add("hidden");
             }
         });
-        
+
         // --- CARREGAMENTO REALTIME DOS DADOS ---
         function carregarTudo() {
             const uid = auth.currentUser.uid;
@@ -433,7 +433,20 @@
             modal(false);
         };
         document.getElementById("btn-save-cliente").onclick = async () => {
-            await addDoc(collection(db, "clientes"), { nome: document.getElementById("c-nome").value, fone: document.getElementById("c-fone").value, userId: auth.currentUser.uid });
+            const nome = document.getElementById("c-nome").value;
+            const fone = document.getElementById("c-fone").value;
+
+            if (!nome || !fone) return alert("Preencha o nome e o telefone!");
+
+            await addDoc(collection(db, "clientes"), {
+                nome: nome,
+                fone: fone,
+                userId: auth.currentUser.uid,
+                emailBarbearia: auth.currentUser.email // <--- Aqui o "carimbo" do e-mail
+            });
+
+            document.getElementById("c-nome").value = "";
+            document.getElementById("c-fone").value = "";
             closeModal('modal-cliente');
         };
         document.getElementById("btn-save-servico").onclick = async () => {
