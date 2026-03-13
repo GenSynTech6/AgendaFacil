@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sys Barber Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #121212;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #D4AF37, #B8860B);
+        }
+
+        .card {
+            background: #1E1E1E;
+            border: 1px solid #2D2D2D;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tab-active {
+            color: #fbbf24;
+            border-bottom: 2px solid #fbbf24;
+        }
+
+        input,
+        select {
+            background: #2D2D2D !important;
+            color: white !important;
+            border: 1px solid #444 !important;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #D4AF37 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loading" class="min-h-screen flex items-center justify-center fixed inset-0 bg-[#121212] z-[300]">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-yellow-400"></div>
+    </div>
+
+    <div id="login" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="card p-8 rounded-xl w-full max-w-md shadow-2xl border-t-4 border-yellow-400">
+            <h1 class="text-3xl font-bold text-center mb-2 italic">Sys <span class="text-yellow-400">Barber</span></h1>
+            <p class="text-center text-gray-500 text-xs mb-8 uppercase tracking-widest">Gestão Profissional</p>
+
+            <input id="email" placeholder="Email" class="w-full p-3 mb-3 rounded">
+            <input id="senha" type="password" placeholder="Senha" class="w-full p-3 mb-4 rounded">
+
+            <button id="btn-login"
+                class="gold w-full p-3 rounded font-bold text-black uppercase hover:brightness-110 transition">Entrar</button>
+            <button id="btn-cadastro" class="w-full mt-4 text-xs text-gray-500 hover:text-yellow-400 underline">Não tem
+                conta? Criar agora</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <nav
+            class="p-4 border-b border-gray-800 flex justify-between items-center sticky top-0 bg-[#121212]/90 backdrop-blur-md z-50">
+            <h1 class="font-bold italic">Sys <span class="text-yellow-400">Barber</span></h1>
+            <button id="logout"
+                class="text-red-400 text-[10px] font-bold uppercase border border-red-400/20 px-3 py-1 rounded-full">Sair</button>
+        </nav>
+
+        <div
+            class="flex justify-around bg-[#1E1E1E] border-b border-gray-800 text-[10px] font-bold uppercase tracking-widest sticky top-[61px] z-40">
+            <button onclick="tab('home')" id="t-home" class="p-4 tab-btn tab-active">Início</button>
+            <button onclick="tab('clientes')" id="t-clientes" class="p-4 tab-btn">Clientes</button>
+            <button onclick="tab('servicos')" id="t-servicos" class="p-4 tab-btn">Serviços</button>
+            <button onclick="tab('config')" id="t-config" class="p-4 tab-btn">Config</button>
+        </div>
+
+        <main class="p-6 max-w-2xl mx-auto pb-32">
+
+            <div id="view-home" class="view">
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="card p-5 rounded-2xl border-l-4 border-yellow-400 shadow-lg">
+                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Faturamento Hoje</p>
+                        <h2 id="faturamento" class="text-2xl font-bold text-white">R$ 0,00</h2>
+                    </div>
+                    <div class="card p-5 rounded-2xl shadow-lg">
+                        <p class="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Atendimentos</p>
+                        <h2 id="atendimentos" class="text-2xl font-bold text-white">0</h2>
+                    </div>
+                </div>
+                <h3 class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest italic">Próximos Horários
+                </h3>
+                <div id="agenda" class="space-y-3"></div>
+            </div>
+
+            <div id="view-clientes" class="view hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-bold uppercase text-xs tracking-widest text-yellow-400">Meus Clientes</h2>
+                    <button onclick="openModal('modal-cliente')"
+                        class="bg-white/5 px-3 py-1 rounded text-[10px] font-bold">+ NOVO</button>
+                </div>
+                <div id="lista-clientes" class="grid grid-cols-1 gap-2"></div>
+            </div>
+
+            <div id="view-servicos" class="view hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-bold uppercase text-xs tracking-widest text-yellow-400">Tabela de Preços</h2>
+                    <button onclick="openModal('modal-servico')"
+                        class="bg-white/5 px-3 py-1 rounded text-[10px] font-bold">+ NOVO</button>
+                </div>
+                <div id="lista-servicos" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            </div>
+
+            <div id="view-config" class="view hidden">
+                <h2 class="font-bold uppercase text-xs tracking-widest text-yellow-400 mb-6 text-center">Configurações
+                </h2>
+                <div class="card p-6 rounded-2xl space-y-6">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                        <div>
+                            <p class="text-sm font-bold">Automação WhatsApp</p>
+                            <p class="text-[10px] text-gray-500">Enviar lembretes automáticos</p>
+                        </div>
+                        <input type="checkbox" checked class="w-5 h-5 accent-yellow-400">
+                    </div>
+                    <div class="text-center pt-4">
+                        <p class="text-[10px] text-gray-600 uppercase mb-2">Sua Conta</p>
+                        <p id="user-email-display" class="text-xs text-gray-400 mb-4 font-mono">---</p>
+                        <button class="text-xs font-bold text-yellow-400 uppercase">Alterar Senha</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <button id="abrirModal"
+            class="fixed bottom-8 right-6 w-16 h-16 gold rounded-full text-black text-3xl shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-40">
+            <span class="mb-1">+</span>
+        </button>
+    </div>
+
+    <div id="modal"
+        class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
+        <div class="card p-6 rounded-2xl w-full max-w-md shadow-2xl border border-yellow-400/20">
+            <h2 class="font-bold mb-6 text-yellow-400 uppercase text-xs tracking-widest text-center">Novo Agendamento
+            </h2>
+            <div class="space-y-3">
+                <label class="text-[10px] text-gray-500 uppercase font-bold">Cliente</label>
+                <select id="input-cliente" class="w-full p-3 rounded"></select>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-bold">Data</label>
+                        <input id="data" type="date" class="w-full p-3 rounded">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase font-bold">Hora</label>
+                        <input id="hora" type="time" class="w-full p-3 rounded">
+                    </div>
+                </div>
+
+                <label class="text-[10px] text-gray-500 uppercase font-bold">Serviço</label>
+                <select id="input-servico" class="w-full p-3 rounded"></select>
+
+                <div class="flex gap-3 pt-6">
+                    <button onclick="modal(false)"
+                        class="flex-1 bg-white/5 p-4 rounded text-xs font-bold uppercase hover:bg-white/10 transition">Cancelar</button>
+                    <button id="salvar"
+                        class="flex-1 gold text-black p-4 rounded text-xs font-bold uppercase hover:brightness-110 transition">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-cliente" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-[100] p-4">
+        <div class="card p-6 rounded-2xl w-full max-w-md">
+            <h2 class="font-bold mb-6 text-yellow-400 uppercase text-xs tracking-widest">Adicionar Cliente</h2>
+            <input id="c-nome" placeholder="Nome Completo" class="w-full p-3 mb-3 rounded">
+            <input id="c-fone" placeholder="WhatsApp (DDD + Número)" class="w-full p-3 mb-6 rounded">
+            <div class="flex gap-3">
+                <button onclick="closeModal('modal-cliente')"
+                    class="flex-1 bg-white/5 p-4 rounded text-xs font-bold uppercase">Voltar</button>
+                <button id="btn-save-cliente"
+                    class="flex-1 gold text-black p-4 rounded text-xs font-bold uppercase">Cadastrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-servico" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-[100] p-4">
+        <div class="card p-6 rounded-2xl w-full max-w-md">
+            <h2 class="font-bold mb-6 text-yellow-400 uppercase text-xs tracking-widest">Configurar Serviço</h2>
+            <input id="s-nome" placeholder="Ex: Corte Degradê" class="w-full p-3 mb-3 rounded">
+            <input id="s-preco" type="number" placeholder="Preço (Somente números)" class="w-full p-3 mb-6 rounded">
+            <div class="flex gap-3">
+                <button onclick="closeModal('modal-servico')"
+                    class="flex-1 bg-white/5 p-4 rounded text-xs font-bold uppercase">Voltar</button>
+                <button id="btn-save-servico"
+                    class="flex-1 gold text-black p-4 rounded text-xs font-bold uppercase">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAa4sZN42xSCw1nggj5wi-_AsuzGMfBEYg",
+            authDomain: "barbershopsaas-2af6c.firebaseapp.com",
+            projectId: "barbershopsaas-2af6c",
+            storageBucket: "barbershopsaas-2af6c.firebasestorage.app",
+            messagingSenderId: "939177796204",
+            appId: "1:939177796204:web:f54a3cd48c485076d8ae49",
+            measurementId: "G-NP7SYJHN84"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Força a persistência sem travar a inicialização
+        setPersistence(auth, browserLocalPersistence).catch(err => console.error("Erro persistência:", err));
+
+        // --- SAFETY TRIGGER: Se em 4 segundos nada acontecer, tira o loading ---
+        setTimeout(() => {
+            const loader = document.getElementById("loading");
+            if (loader && !loader.classList.contains("hidden")) {
+                console.warn("Firebase demorou demais. Forçando saída do loading.");
+                loader.classList.add("hidden");
+            }
+        }, 4000);
+
+        // --- NAVEGAÇÃO ---
+        window.tab = (id) => {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            const target = document.getElementById('view-' + id);
+            if (target) target.classList.remove('hidden');
+            const btn = document.getElementById('t-' + id);
+            if (btn) btn.classList.add('tab-active');
+        };
+
+        // --- MONITOR DE LOGIN ---
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById("loading").classList.add("hidden");
+            if (user) {
+                document.getElementById("login").classList.add("hidden");
+                document.getElementById("dashboard").classList.remove("hidden");
+                document.getElementById('user-email-display').innerText = user.email;
+                carregarTudo();
+            } else {
+                document.getElementById("dashboard").classList.add("hidden");
+                document.getElementById("login").classList.remove("hidden");
+            }
+        });
+
+        // --- FUNÇÕES DE SALVAMENTO ---
+        async function salvarAgendamento() {
+            const selectCli = document.getElementById("input-cliente");
+            const selectSer = document.getElementById("input-servico");
+            const dataAg = document.getElementById("data").value;
+            const horaAg = document.getElementById("hora").value;
+
+            if (!selectCli.value || !selectSer.value || !dataAg || !horaAg) return alert("Preencha todos os campos!");
+
+            const data = {
+                cliente: selectCli.value,
+                data: dataAg,
+                hora: horaAg,
+                servico: selectSer.options[selectSer.selectedIndex].text.split(' - ')[0],
+                preco: parseFloat(selectSer.value),
+                userId: auth.currentUser.uid,
+                criado: serverTimestamp()
+            };
+            try {
+                await addDoc(collection(db, "agendamentos"), data);
+                modal(false);
+            } catch (e) { alert("Erro ao salvar: " + e.message); }
+        }
+
+        async function salvarCliente() {
+            const nome = document.getElementById("c-nome").value;
+            const fone = document.getElementById("c-fone").value;
+            if (!nome) return alert("Nome é obrigatório!");
+            try {
+                await addDoc(collection(db, "clientes"), { nome, fone, userId: auth.currentUser.uid });
+                closeModal('modal-cliente');
+            } catch (e) { alert("Erro ao salvar cliente."); }
+        }
+
+        async function salvarServico() {
+            const nome = document.getElementById("s-nome").value;
+            const preco = parseFloat(document.getElementById("s-preco").value);
+            if (!nome || isNaN(preco)) return alert("Nome e preço válidos!");
+            try {
+                await addDoc(collection(db, "servicos"), { nome, preco, userId: auth.currentUser.uid });
+                closeModal('modal-servico');
+            } catch (e) { alert("Erro ao salvar serviço."); }
+        }
+
+        // --- CARREGAMENTO REALTIME ---
+        function carregarTudo() {
+            const uid = auth.currentUser.uid;
+
+            // Agenda
+            onSnapshot(query(collection(db, "agendamentos"), where("userId", "==", uid), orderBy("hora")), snap => {
+                let html = ""; let total = 0; let atend = 0;
+                snap.forEach(d => {
+                    const item = d.data();
+                    total += item.preco; atend++;
+                    html += `
+            <div class="card p-4 rounded-xl flex justify-between items-center border-l-4 border-yellow-400">
+                <div>
+                    <p class="font-bold text-sm text-yellow-400">${item.hora}</p>
+                    <p class="text-xs font-bold">${item.cliente}</p>
+                    <p class="text-[9px] text-gray-500 uppercase">${item.servico}</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="font-bold text-white text-sm">R$${item.preco.toFixed(2)}</span>
+                    <button onclick="remover('agendamentos','${d.id}')" class="text-gray-700">✕</button>
+                </div>
+            </div>`;
+                });
+                document.getElementById("agenda").innerHTML = html || "<p class='text-center text-gray-600 text-xs py-10'>Sem agendamentos.</p>";
+                document.getElementById("faturamento").innerText = "R$ " + total.toFixed(2);
+                document.getElementById("atendimentos").innerText = atend;
+            });
+
+            // Clientes
+            onSnapshot(query(collection(db, "clientes"), where("userId", "==", uid)), snap => {
+                let html = ""; let select = "<option value=''>Selecionar Cliente...</option>";
+                snap.forEach(d => {
+                    const c = d.data();
+                    html += `<div class="card p-4 rounded-xl flex justify-between items-center"><span>${c.nome}</span><button onclick="remover('clientes','${d.id}')" class="text-xs text-red-900">Excluir</button></div>`;
+                    select += `<option value="${c.nome}">${c.nome}</option>`;
+                });
+                document.getElementById("lista-clientes").innerHTML = html;
+                document.getElementById("input-cliente").innerHTML = select;
+            });
+
+            // Serviços
+            onSnapshot(query(collection(db, "servicos"), where("userId", "==", uid)), snap => {
+                let html = ""; let select = "<option value=''>Selecionar Serviço...</option>";
+                snap.forEach(d => {
+                    const s = d.data();
+                    html += `<div class="card p-4 rounded-xl flex justify-between items-center"><span>${s.nome}</span><span class="text-yellow-400 font-bold">R$${s.preco.toFixed(2)}</span></div>`;
+                    select += `<option value="${s.preco}">${s.nome} - R$${s.preco.toFixed(2)}</option>`;
+                });
+                document.getElementById("lista-servicos").innerHTML = html;
+                document.getElementById("input-servico").innerHTML = select;
+            });
+        }
+
+        // --- GLOBALIZANDO FUNÇÕES ---
+        window.modal = (v) => document.getElementById("modal").classList.toggle("hidden", !v);
+        window.openModal = (id) => document.getElementById(id).classList.remove("hidden");
+        window.closeModal = (id) => document.getElementById(id).classList.add("hidden");
+        window.remover = async (col, id) => { if (confirm("Remover?")) await deleteDoc(doc(db, col, id)); };
+
+        document.getElementById("btn-login").onclick = async () => {
+            try { await signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("senha").value); }
+            catch (e) { alert("Falha no login: " + e.message); }
+        };
+        document.getElementById("btn-cadastro").onclick = async () => {
+            try { await createUserWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("senha").value); }
+            catch (e) { alert("Erro no cadastro."); }
+        };
+        document.getElementById("logout").onclick = () => signOut(auth);
+        document.getElementById("abrirModal").onclick = () => modal(true);
+        document.getElementById("salvar").onclick = salvarAgendamento;
+        document.getElementById("btn-save-cliente").onclick = salvarCliente;
+        document.getElementById("btn-save-servico").onclick = salvarServico;
+    </script>
+</body>
+
+</html> 
