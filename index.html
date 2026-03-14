@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="icon" href="assets/img/barbersys.png">
+    <meta name="icon" href="assets/img/barbersys.ico">
     <title>Sys Barber Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -57,11 +57,9 @@
             <h2 class="text-2xl font-bold text-white mb-2 italic">Assinatura Expirada</h2>
             <p class="text-gray-400 text-sm mb-6">Para continuar gerenciando sua barbearia e recebendo agendamentos
                 online, ative sua licença PRO.</p>
-
             <a href="https://wa.me/55SEUNUMERO" target="_blank"
                 class="gold block w-full p-4 rounded-xl text-black font-bold uppercase hover:scale-105 transition">Ativar
                 Agora</a>
-
             <button id="logout-bloqueio" class="mt-4 text-xs text-gray-600 underline uppercase tracking-widest">Sair da
                 conta</button>
         </div>
@@ -77,14 +75,11 @@
                     class="text-yellow-400">Barber</span></h1>
             <p id="login-subtitle" class="text-center text-gray-500 text-xs mb-8 uppercase tracking-widest">Gestão
                 Profissional</p>
-
             <div id="area-cadastro" class="hidden mb-3">
                 <input id="reg-nome-barbearia" placeholder="Nome da sua Barbearia" class="w-full p-3 rounded">
             </div>
-
             <input id="email" placeholder="Email" class="w-full p-3 mb-3 rounded">
             <input id="senha" type="password" placeholder="Senha" class="w-full p-3 mb-4 rounded">
-
             <button id="btn-principal"
                 class="gold w-full p-3 rounded font-bold text-black uppercase hover:brightness-110 transition">Entrar</button>
             <button id="btn-alternar" class="w-full mt-4 text-xs text-gray-500 hover:text-yellow-400 underline">Não tem
@@ -152,13 +147,25 @@
                         <p id="display-nome-barber" class="text-xl font-bold text-white">---</p>
                         <p id="user-email-display" class="text-xs text-gray-400 font-mono mt-1">---</p>
                     </div>
+
+                    <div class="p-4 bg-yellow-400/5 rounded-xl border border-dashed border-yellow-400/30">
+                        <p class="text-[10px] text-yellow-400 uppercase font-bold mb-2">Seu Link de Agendamento Online
+                        </p>
+                        <div class="flex gap-2">
+                            <input id="link-externo" readonly class="text-[10px] bg-black/50 p-2 rounded flex-1">
+                            <button onclick="copiarLink()"
+                                class="gold text-black px-3 py-1 rounded text-[10px] font-bold">COPIAR</button>
+                        </div>
+                    </div>
+
                     <hr class="border-gray-800">
                     <div class="flex justify-between items-center">
                         <div>
-                            <p class="text-sm font-bold">Automação WhatsApp</p>
-                            <p class="text-[10px] text-gray-500">Enviar lembretes automáticos</p>
+                            <p class="text-sm font-bold">Avisos Sonoros</p>
+                            <p class="text-[10px] text-gray-500 italic">Notificar novos agendamentos online</p>
                         </div>
-                        <input type="checkbox" checked class="w-5 h-5 accent-yellow-400">
+                        <button onclick="ativarNotificacoes()"
+                            class="text-yellow-400 text-xs font-bold underline">ATIVAR</button>
                     </div>
                 </div>
             </div>
@@ -246,58 +253,59 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
         setPersistence(auth, browserLocalPersistence);
 
-        // --- LÓGICA DE LOGIN/CADASTRO ---
-        let modoCadastro = false;
-        const btnAlternar = document.getElementById("btn-alternar");
-        const areaCadastro = document.getElementById("area-cadastro");
-        const btnPrincipal = document.getElementById("btn-principal");
+        // --- NAVEGAÇÃO ---
+        window.tab = (id) => {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('view-' + id).classList.remove('hidden');
+            document.getElementById('t-' + id).classList.add('tab-active');
+        };
+        window.alternarStatus = async (id, status) => { await updateDoc(doc(db, "agendamentos", id), { status: status === "pendente" ? "concluido" : "pendente" }); };
+        window.lembrete = (fone, nome, hora) => { if (!fone) return alert("Sem telefone!"); window.open(`https://wa.me/55${fone}?text=${encodeURIComponent('Olá ' + nome + ', confirmando seu horário às ' + hora + '?')}`); };
+        window.remover = async (col, id) => { if (confirm("Excluir?")) await deleteDoc(doc(db, col, id)); };
+        window.modal = (v) => document.getElementById("modal").classList.toggle("hidden", !v);
+        window.openModal = (id) => document.getElementById(id).classList.remove("hidden");
+        window.closeModal = (id) => document.getElementById(id).classList.add("hidden");
+        window.copiarLink = () => { const el = document.getElementById("link-externo"); el.select(); document.execCommand("copy"); alert("Link copiado!"); };
+        window.ativarNotificacoes = () => { Notification.requestPermission().then(p => { if (p === "granted") alert("Sons ativados!"); }); };
 
-        btnAlternar.onclick = () => {
+        // --- AUTH ---
+        let modoCadastro = false;
+        document.getElementById("btn-alternar").onclick = () => {
             modoCadastro = !modoCadastro;
-            areaCadastro.classList.toggle("hidden", !modoCadastro);
-            btnPrincipal.innerText = modoCadastro ? "Criar Barbearia" : "Entrar";
-            btnAlternar.innerText = modoCadastro ? "Já tenho conta? Entrar" : "Não tem conta? Criar agora";
+            document.getElementById("area-cadastro").classList.toggle("hidden", !modoCadastro);
+            document.getElementById("btn-principal").innerText = modoCadastro ? "Criar Barbearia" : "Entrar";
+            document.getElementById("btn-alternar").innerText = modoCadastro ? "Já tenho conta? Entrar" : "Não tem conta? Criar agora";
         };
 
-        btnPrincipal.onclick = async () => {
+        document.getElementById("btn-principal").onclick = async () => {
             const email = document.getElementById("email").value;
             const senha = document.getElementById("senha").value;
             const nomeBarber = document.getElementById("reg-nome-barbearia").value;
-
             if (!email || !senha) return alert("Preencha email e senha!");
-
             try {
                 if (modoCadastro) {
                     if (!nomeBarber) return alert("Digite o nome da sua barbearia!");
                     const res = await createUserWithEmailAndPassword(auth, email, senha);
-
-                    // Lógica de Expiração (3 dias grátis)
-                    const hoje = new Date();
-                    const expiracao = new Date();
-                    expiracao.setDate(hoje.getDate() + 3);
-
-                    await setDoc(doc(db, "perfis", res.user.uid), {
-                        nomeBarbearia: nomeBarber,
-                        email: email,
-                        statusPagamento: "ativo",
-                        expiraEm: expiracao,
-                        criadoEm: hoje
-                    });
-                    alert("Barbearia criada com 3 dias de teste!");
-                } else {
-                    await signInWithEmailAndPassword(auth, email, senha);
-                }
+                    const exp = new Date(); exp.setDate(exp.getDate() + 3);
+                    await setDoc(doc(db, "perfis", res.user.uid), { nomeBarbearia: nomeBarber, email: email, statusPagamento: "ativo", expiraEm: exp, criadoEm: new Date() });
+                } else { await signInWithEmailAndPassword(auth, email, senha); }
             } catch (e) { alert("Erro: " + e.message); }
         };
 
         // --- MONITOR DE AUTENTICAÇÃO ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // Gerar link de agendamento dinâmico
+                const linkFinal = `https://barbersys.xyz/agendar.html?id=${user.uid}`;
+                document.getElementById("link-externo").value = linkFinal;
+
                 onSnapshot(doc(db, "perfis", user.uid), (snap) => {
-                    document.getElementById("loading").classList.add("hidden"); // Movemos para cá
+                    document.getElementById("loading").classList.add("hidden");
                     if (snap.exists()) {
                         const data = snap.data();
                         const agora = new Date();
@@ -307,46 +315,43 @@
                         document.getElementById("display-nome-barber").innerText = data.nomeBarbearia;
                         document.getElementById("user-email-display").innerText = user.email;
 
-                        if (expiraEm) {
-                            const dataFormatada = expiraEm.toLocaleDateString('pt-BR');
-                            const configArea = document.getElementById("view-config").querySelector(".card");
-                            const oldVenc = document.getElementById("vencimento-info");
-                            if (oldVenc) oldVenc.remove();
-                            const divVenc = document.createElement("div");
-                            divVenc.id = "vencimento-info";
-                            divVenc.className = "text-center p-2 bg-white/5 rounded-lg border border-white/10";
-                            divVenc.innerHTML = `<p class="text-[10px] text-gray-500 uppercase">Sua assinatura vence em:</p><p class="text-sm font-bold text-yellow-400">${dataFormatada}</p>`;
-                            configArea.prepend(divVenc);
-
-                            if (agora > expiraEm) {
-                                document.getElementById("bloqueio-pagamento").classList.remove("hidden");
-                                document.getElementById("dashboard").classList.add("hidden");
-                                return; // Para aqui se estiver bloqueado
-                            }
+                        if (expiraEm && agora > expiraEm) {
+                            document.getElementById("bloqueio-pagamento").classList.remove("hidden");
+                            document.getElementById("dashboard").classList.add("hidden");
+                        } else {
+                            document.getElementById("bloqueio-pagamento").classList.add("hidden");
+                            document.getElementById("dashboard").classList.remove("hidden");
+                            document.getElementById("login").classList.add("hidden");
                         }
-
-                        document.getElementById("bloqueio-pagamento").classList.add("hidden");
-                        document.getElementById("dashboard").classList.remove("hidden");
-                        document.getElementById("login").classList.add("hidden");
-                    } else {
-                        // Se o usuário logou mas não tem perfil (conta antiga ou erro no cadastro)
-                        alert("Perfil não encontrado. Por favor, crie uma conta nova.");
-                        signOut(auth);
                     }
                 });
                 carregarTudo();
+                monitorarAgendamentosExternos(); // Ativa o "Plim!"
             } else {
                 document.getElementById("loading").classList.add("hidden");
                 document.getElementById("dashboard").classList.add("hidden");
                 document.getElementById("login").classList.remove("hidden");
-                document.getElementById("bloqueio-pagamento").classList.add("hidden");
             }
         });
 
-        // --- CARREGAMENTO REALTIME DOS DADOS ---
+        // --- MONITOR DE NOVOS AGENDAMENTOS (PLIM!) ---
+        function monitorarAgendamentosExternos() {
+            const q = query(collection(db, "agendamentos"), where("userId", "==", auth.currentUser.uid), where("status", "==", "pendente"));
+            let inicial = true;
+            onSnapshot(q, snap => {
+                if (inicial) { inicial = false; return; }
+                snap.docChanges().forEach(change => {
+                    if (change.type === "added") {
+                        somNotificacao.play().catch(() => console.log("Som bloqueado pelo navegador."));
+                        if (Notification.permission === "granted") new Notification("Novo agendamento online!");
+                    }
+                });
+            });
+        }
+
+        // --- CARREGAMENTO REALTIME ---
         function carregarTudo() {
             const uid = auth.currentUser.uid;
-
             onSnapshot(query(collection(db, "agendamentos"), where("userId", "==", uid), orderBy("hora")), snap => {
                 let html = ""; let pago = 0; let pendente = 0;
                 snap.forEach(d => {
@@ -354,16 +359,16 @@
                     const isPago = item.status === "concluido";
                     if (isPago) pago += item.preco; else pendente += item.preco;
                     html += `
-            <div class="card p-4 rounded-xl flex justify-between items-center ${isPago ? 'opacity-40 border-l-4 border-green-500' : 'border-l-4 border-yellow-400'}">
-                <div onclick="window.lembrete('${item.fone}', '${item.cliente}', '${item.hora}')" class="cursor-pointer">
-                    <p class="font-bold text-sm ${isPago ? 'line-through text-gray-500' : 'text-yellow-400'}">${item.hora} - ${item.cliente}</p>
-                    <p class="text-[9px] text-gray-500 uppercase">${item.servico}</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="window.alternarStatus('${d.id}', '${item.status}')" class="text-xl">${isPago ? '✅' : '💰'}</button>
-                    <button onclick="remover('agendamentos','${d.id}')" class="text-gray-700">✕</button>
-                </div>
-            </div>`;
+                    <div class="card p-4 rounded-xl flex justify-between items-center ${isPago ? 'opacity-40 border-l-4 border-green-500' : 'border-l-4 border-yellow-400'}">
+                        <div onclick="window.lembrete('${item.fone}', '${item.cliente}', '${item.hora}')" class="cursor-pointer">
+                            <p class="font-bold text-sm ${isPago ? 'line-through text-gray-500' : 'text-yellow-400'}">${item.hora} - ${item.cliente} ${item.externo ? '<span class="text-[8px] bg-yellow-400 text-black px-1 rounded ml-1">ONLINE</span>' : ''}</p>
+                            <p class="text-[9px] text-gray-500 uppercase">${item.servico}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="window.alternarStatus('${d.id}', '${item.status}')" class="text-xl">${isPago ? '✅' : '💰'}</button>
+                            <button onclick="remover('agendamentos','${d.id}')" class="text-gray-700">✕</button>
+                        </div>
+                    </div>`;
                 });
                 document.getElementById("agenda").innerHTML = html || "<p class='text-center py-10 text-gray-600 text-xs'>Nenhum horário hoje.</p>";
                 document.getElementById("faturamento").innerHTML = `R$ ${pago.toFixed(2)} <span class="block text-[10px] text-gray-500 font-normal">Pendente: R$ ${pendente.toFixed(2)}</span>`;
@@ -374,7 +379,7 @@
                 let html = ""; let sel = "<option value=''>Selecionar Cliente</option>";
                 snap.forEach(d => {
                     const c = d.data();
-                    html += `<div class="card p-3 flex justify-between items-center"><span>${c.nome}</span><button onclick="remover('clientes','${d.id}')" class="text-red-500 text-xs">EXCLUIR</button></div>`;
+                    html += `<div class="card p-3 flex justify-between items-center"><div class="text-sm font-bold">${c.nome}<p class="text-[9px] text-gray-500 font-normal">${c.emailBarbearia || ''}</p></div><button onclick="remover('clientes','${d.id}')" class="text-red-500 text-xs uppercase font-bold">Excluir</button></div>`;
                     sel += `<option value="${c.nome}" data-fone="${c.fone}">${c.nome}</option>`;
                 });
                 document.getElementById("lista-clientes").innerHTML = html;
@@ -382,40 +387,32 @@
             });
 
             onSnapshot(query(collection(db, "servicos"), where("userId", "==", uid)), snap => {
-                let html = ""; let sel = "<option value=''>Selecionar Serviço</option>";
+                let html = "";
+                let sel = "<option value=''>Selecionar Serviço</option>";
+
                 snap.forEach(d => {
                     const s = d.data();
-                    html += `<div class="card p-3 flex justify-between items-center"><span>${s.nome}</span><button onclick="remover('servicos','${d.id}')" class="text-red-500 text-xs">EXCLUIR</button></div>`;
+                    html += `
+        <div class="card p-3 flex justify-between items-center border-l-2 border-yellow-600">
+            <div>
+                <p class="font-medium text-sm text-white">${s.nome}</p>
+                <p class="text-[9px] text-gray-500 italic">${s.emailBarbearia || 'E-mail não registrado'}</p>
+                <p class="text-yellow-500 text-xs font-bold">R$ ${s.preco.toFixed(2)}</p>
+            </div>
+            <button onclick="remover('servicos','${d.id}')" class="text-red-900/50 hover:text-red-500 text-[10px] font-bold uppercase transition">Excluir</button>
+        </div>`;
+
                     sel += `<option value="${s.preco}">${s.nome} - R$ ${s.preco.toFixed(2)}</option>`;
                 });
-                document.getElementById("lista-servicos").innerHTML = html;
+
+                document.getElementById("lista-servicos").innerHTML = html || "<p class='text-center text-gray-600 text-[10px] py-4'>Nenhum serviço cadastrado.</p>";
                 document.getElementById("input-servico").innerHTML = sel;
             });
         }
 
-        // --- FUNÇÕES GLOBAIS ---
-        window.tab = (id) => {
-            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('view-' + id).classList.remove('hidden');
-            document.getElementById('t-' + id).classList.add('tab-active');
-        };
-        window.alternarStatus = async (id, status) => {
-            await updateDoc(doc(db, "agendamentos", id), { status: status === "pendente" ? "concluido" : "pendente" });
-        };
-        window.lembrete = (fone, nome, hora) => {
-            if (!fone) return alert("Sem telefone!");
-            window.open(`https://wa.me/55${fone}?text=${encodeURIComponent('Olá ' + nome + ', confirmando seu horário às ' + hora + '?')}`);
-        };
-        window.remover = async (col, id) => { if (confirm("Excluir?")) await deleteDoc(doc(db, col, id)); };
-        window.modal = (v) => document.getElementById("modal").classList.toggle("hidden", !v);
-        window.openModal = (id) => document.getElementById(id).classList.remove("hidden");
-        window.closeModal = (id) => document.getElementById(id).classList.add("hidden");
-
-        // --- CLIQUES ---
+        // --- CLIQUES DE SALVAMENTO ---
         document.getElementById("logout").onclick = () => signOut(auth);
         document.getElementById("logout-bloqueio").onclick = () => signOut(auth);
-        document.getElementById("abrirModal").onclick = () => modal(true);
         document.getElementById("salvar").onclick = async () => {
             const cli = document.getElementById("input-cliente");
             const ser = document.getElementById("input-servico");
@@ -428,29 +425,33 @@
                 servico: ser.options[ser.selectedIndex].text.split(' - ')[0],
                 preco: parseFloat(ser.value),
                 status: "pendente",
-                userId: auth.currentUser.uid
+                userId: auth.currentUser.uid,
+                criado: serverTimestamp()
             });
             modal(false);
         };
         document.getElementById("btn-save-cliente").onclick = async () => {
             const nome = document.getElementById("c-nome").value;
             const fone = document.getElementById("c-fone").value;
-
-            if (!nome || !fone) return alert("Preencha o nome e o telefone!");
-
-            await addDoc(collection(db, "clientes"), {
-                nome: nome,
-                fone: fone,
-                userId: auth.currentUser.uid,
-                emailBarbearia: auth.currentUser.email // <--- Aqui o "carimbo" do e-mail
-            });
-
-            document.getElementById("c-nome").value = "";
-            document.getElementById("c-fone").value = "";
+            if (!nome || !fone) return alert("Preencha tudo!");
+            await addDoc(collection(db, "clientes"), { nome, fone, userId: auth.currentUser.uid, emailBarbearia: auth.currentUser.email });
             closeModal('modal-cliente');
         };
         document.getElementById("btn-save-servico").onclick = async () => {
-            await addDoc(collection(db, "servicos"), { nome: document.getElementById("s-nome").value, preco: parseFloat(document.getElementById("s-preco").value), userId: auth.currentUser.uid });
+            const nome = document.getElementById("s-nome").value;
+            const preco = parseFloat(document.getElementById("s-preco").value);
+
+            if (!nome || isNaN(preco)) return alert("Preencha o nome e o preço corretamente!");
+
+            await addDoc(collection(db, "servicos"), {
+                nome: nome,
+                preco: preco,
+                userId: auth.currentUser.uid,
+                emailBarbearia: auth.currentUser.email // <--- Carimbo de segurança
+            });
+
+            document.getElementById("s-nome").value = "";
+            document.getElementById("s-preco").value = "";
             closeModal('modal-servico');
         };
     </script>

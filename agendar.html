@@ -1,40 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="icon" href="assets/img/barbersys.ico">
     <title>Agendar Horário - Sys Barber</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #121212; color: white; font-family: 'Inter', sans-serif; }
-        .gold { background: linear-gradient(135deg, #D4AF37, #B8860B); }
-        .card { background: #1E1E1E; border: 1px solid #2D2D2D; }
-        input, select { background: #2D2D2D !important; color: white !important; border: 1px solid #444 !important; outline: none; }
-        input:focus { border-color: #D4AF37 !important; }
+        body {
+            background: #121212;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #D4AF37, #B8860B);
+        }
+
+        .card {
+            background: #1E1E1E;
+            border: 1px solid #2D2D2D;
+        }
+
+        input,
+        select {
+            background: #2D2D2D !important;
+            color: white !important;
+            border: 1px solid #444 !important;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #D4AF37 !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body class="p-6">
     <div class="max-w-md mx-auto">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold italic">Sys <span class="text-yellow-400">Barber</span></h1>
-            <p class="text-gray-400 text-sm">Agende seu estilo em segundos</p>
+            <p id="nome-barbearia" class="text-gray-400 text-sm italic">Carregando barbearia...</p>
         </header>
 
         <div id="form-container" class="card p-6 rounded-2xl shadow-2xl border-t-4 border-yellow-400">
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-500">Seu Nome</label>
-                    <input id="cliente-nome" type="text" placeholder="Ex: João Silva" class="w-full p-3 rounded-lg mt-1">
+                    <input id="cliente-nome" type="text" placeholder="Ex: João Silva"
+                        class="w-full p-3 rounded-lg mt-1">
                 </div>
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-500">Seu WhatsApp (DDD + Número)</label>
-                    <input id="cliente-fone" type="tel" placeholder="Ex: 11999998888" class="w-full p-3 rounded-lg mt-1">
+                    <input id="cliente-fone" type="tel" placeholder="Ex: 11999998888"
+                        class="w-full p-3 rounded-lg mt-1">
                 </div>
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-500">Escolha o Serviço</label>
                     <select id="cliente-servico" class="w-full p-3 rounded-lg mt-1">
-                        <option value="">Carregando serviços...</option>
+                        <option value="">Aguardando identificação...</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -47,7 +77,9 @@
                         <input id="cliente-hora" type="time" class="w-full p-3 rounded-lg mt-1">
                     </div>
                 </div>
-                <button id="btn-confirmar" class="gold w-full p-4 rounded-xl text-black font-bold uppercase mt-4 hover:brightness-110 active:scale-95 transition">Confirmar Agendamento</button>
+                <button id="btn-confirmar"
+                    class="gold w-full p-4 rounded-xl text-black font-bold uppercase mt-4 hover:brightness-110 active:scale-95 transition">Confirmar
+                    Agendamento</button>
             </div>
         </div>
 
@@ -55,13 +87,14 @@
             <div class="text-6xl mb-4">✨</div>
             <h2 class="text-2xl font-bold text-yellow-400">Tudo pronto!</h2>
             <p class="text-gray-400 mt-2">Seu horário foi reservado. Nos vemos em breve!</p>
-            <button onclick="location.reload()" class="mt-6 text-sm text-gray-500 underline">Fazer outro agendamento</button>
+            <button onclick="location.reload()" class="mt-6 text-sm text-gray-500 underline">Fazer outro
+                agendamento</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAa4sZN42xSCw1nggj5wi-_AsuzGMfBEYg",
@@ -76,26 +109,55 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- IMPORTANTE: TROQUE O CÓDIGO ABAIXO PELO SEU UID ---
-        const SEU_UID = "f8Qfu8lymBWnoXIwvQOQ2NoUFE83"; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const BARBER_ID = urlParams.get('id');
 
-        // Carregar serviços que VOCÊ cadastrou no sistema
-        async function buscarServicos() {
+        if (!BARBER_ID) {
+            alert("Link inválido!");
+            document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:50px;'>Barbearia não encontrada.</h1>";
+        }
+
+        async function inicializarPagina() {
+            console.log("Tentando carregar serviços para o ID:", BARBER_ID);
             try {
-                const q = query(collection(db, "servicos"), where("userId", "==", SEU_UID));
+                // 1. Testa se o Firebase responde para o Perfil
+                const perfilSnap = await getDoc(doc(db, "perfis", BARBER_ID));
+                if (perfilSnap.exists()) {
+                    document.getElementById("nome-barbearia").innerText = perfilSnap.data().nomeBarbearia;
+                    console.log("Perfil encontrado!");
+                }
+
+                // 2. Busca simplificada de serviços
+                const q = query(collection(db, "servicos"), where("userId", "==", BARBER_ID));
                 const snap = await getDocs(q);
-                let html = '<option value="">Selecione...</option>';
-                snap.forEach(doc => {
-                    const s = doc.data();
-                    html += `<option value="${s.preco}" data-nome="${s.nome}">${s.nome} - R$ ${s.preco.toFixed(2)}</option>`;
-                });
+
+                console.log("Resultado da busca (tamanho):", snap.size);
+
+                let html = '<option value="">Selecione o serviço...</option>';
+
+                if (snap.empty) {
+                    console.warn("A busca retornou zero documentos para este userId.");
+                    html = '<option value="">Nenhum serviço disponível.</option>';
+                } else {
+                    snap.forEach(doc => {
+                        const s = doc.data();
+                        html += `<option value="${s.preco}" data-nome="${s.nome}">${s.nome} - R$ ${Number(s.preco).toFixed(2)}</option>`;
+                    });
+                }
                 document.getElementById("cliente-servico").innerHTML = html;
+
             } catch (e) {
-                console.error("Erro ao carregar serviços:", e);
-                document.getElementById("cliente-servico").innerHTML = '<option>Erro ao carregar...</option>';
+                // ESTA PARTE É A MAIS IMPORTANTE:
+                console.error("ERRO DETALHADO DO FIREBASE:", e);
+                alert("Erro técnico: " + e.message);
+
+                if (e.message.includes("index")) {
+                    console.error("Você precisa criar um índice. Procure o link azul acima no console!");
+                }
             }
         }
-        buscarServicos();
+
+        inicializarPagina();
 
         // Ação de Agendar
         document.getElementById("btn-confirmar").onclick = async () => {
@@ -111,25 +173,25 @@
 
             try {
                 await addDoc(collection(db, "agendamentos"), {
-                    cliente: nome + " (Online)",
+                    cliente: nome,
                     fone: fone,
                     data: data,
                     hora: hora,
                     servico: select.options[select.selectedIndex].getAttribute('data-nome'),
                     preco: parseFloat(select.value),
                     status: "pendente",
-                    externo: true, // Para você saber que veio do link
-                    userId: SEU_UID,
+                    externo: true,
+                    userId: BARBER_ID,
                     criado: serverTimestamp()
                 });
 
                 document.getElementById("form-container").classList.add("hidden");
                 document.getElementById("feedback-sucesso").classList.remove("hidden");
             } catch (e) {
-                alert("Erro ao processar agendamento. Tente novamente.");
-                console.error(e);
+                alert("Erro ao agendar. Tente novamente.");
             }
         };
     </script>
 </body>
+
 </html>
