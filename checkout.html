@@ -145,7 +145,7 @@
 
                             // 3. SUCESSO - REDIRECIONA
                             const transacaoId = `MP-${Math.random().toString(36).substring(7).toUpperCase()}`;
-                            window.location.href = `sucesso.html?id=${transacaoId}&valor=${valorOriginal}`;
+                            window.location.href = `confirmAssinatura.html?id=${transacaoId}&valor=${valorOriginal}`;
 
                         } catch (e) {
                             console.error("Falha no pagamento:", e);
