@@ -16,10 +16,10 @@ const client = new MercadoPagoConfig({
     options: { timeout: 10000 } 
 });
 
-exports.processarPagamento = onCall(async (request) => {
-    // 1. Verificação de Segurança: O usuário está logado?
+exports.processarPagamento = onCall({ cors: true }, async (request) => {
+    // Restante do seu código igual...
     if (!request.auth) {
-        throw new HttpsError('unauthenticated', 'O usuário precisa estar logado para realizar o pagamento.');
+        throw new HttpsError('unauthenticated', 'Usuário não logado.');
     }
 
     const data = request.data; 
