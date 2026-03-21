@@ -94,7 +94,7 @@
 
         const iniciarMercadoPago = () => {
             // USANDO SUA CHAVE PÚBLICA FORNECIDA
-            const mp = new MercadoPago('APP_USR-4622444396438923-032022-fb8b8ec8f8ae891918be16bfeccf9992-3281358589');
+            const mp = new MercadoPago('APP_USR-77f18003-2f39-494a-8a4b-1f520924c239');
 
             const cardForm = mp.cardForm({
                 amount: valorOriginal,
@@ -118,7 +118,7 @@
                     },
                     onSubmit: async event => {
                         event.preventDefault();
-
+                        console.log("Botão clicado!")
                         const btn = document.getElementById("form-checkout__submit");
                         btn.innerText = "PROCESSANDO...";
                         btn.disabled = true;
