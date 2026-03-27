@@ -124,110 +124,117 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import {
-            getAuth,
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
-            onAuthStateChanged,
-            GoogleAuthProvider,
-            signInWithPopup
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword, 
+        onAuthStateChanged, 
+        GoogleAuthProvider, 
+        signInWithPopup 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+        getFirestore, 
+        doc, 
+        setDoc, 
+        getDoc 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
-            authDomain: "agendafacil-1.firebaseapp.com",
-            projectId: "agendafacil-1",
-            storageBucket: "agendafacil-1.firebasestorage.app",
-            messagingSenderId: "862585496599",
-            appId: "1:862585496599:web:2a360f1147a334d1342852"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
+        authDomain: "agendafacil-1.firebaseapp.com",
+        projectId: "agendafacil-1",
+        storageBucket: "agendafacil-1.firebasestorage.app",
+        messagingSenderId: "862585496599",
+        appId: "1:862585496599:web:2a360f1147a334d1342852"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+    // Inicialização Única
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-        let modoCadastro = false;
-        document.getElementById("btn-google").onclick = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
+    let modoCadastro = false;
 
-                // Verifica se o perfil já existe, se não, cria um novo
-                const docRef = doc(db, "perfis", user.uid);
-                const docSnap = await getDoc(docRef);
+    // --- LOGIN COM GOOGLE ---
+    document.getElementById("btn-google").onclick = async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
 
-                if (!docSnap.exists()) {
-                    const expira = new Date();
-                    expira.setDate(expira.getDate() + 7);
+            const docRef = doc(db, "perfis", user.uid);
+            const docSnap = await getDoc(docRef);
 
-                    await setDoc(docRef, {
-                        nomeBarbearia: user.displayName || "Meu Negócio",
-                        email: user.email,
-                        statusPagamento: "teste",
-                        expiraEm: expira,
-                        criadoEm: new Date(),
-                        fotoUrl: user.photoURL
-                    });
-                }
-                // O onAuthStateChanged vai redirecionar automaticamente
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao entrar com Google: " + error.message);
+            if (!docSnap.exists()) {
+                const expira = new Date();
+                expira.setDate(expira.getDate() + 7);
+
+                await setDoc(docRef, {
+                    nomeBarbearia: user.displayName || "Meu Negócio",
+                    email: user.email,
+                    statusPagamento: "teste",
+                    expiraEm: expira,
+                    criadoEm: new Date(),
+                    fotoUrl: user.photoURL
+                });
             }
-        };
-        // Alternar entre Login e Cadastro
-        document.getElementById("btn-alternar").onclick = () => {
-            modoCadastro = !modoCadastro;
-            document.getElementById("area-cadastro").classList.toggle("hidden", !modoCadastro);
-            document.getElementById("btn-principal").innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
-            document.getElementById("btn-alternar").innerHTML = modoCadastro ? "Já tem conta? <span class='text-white underline ml-1'>Fazer Login</span>" : "Não tem conta? <span class='text-white underline ml-1'>Criar agora</span>";
-            document.getElementById("login-subtitle").innerText = modoCadastro ? "Novo Cadastro" : "Gestão Profissional";
-        };
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao entrar com Google: " + error.message);
+        }
+    };
 
-        // Ação Principal
-        document.getElementById("btn-principal").onclick = async () => {
-            const email = document.getElementById("email").value;
-            const senha = document.getElementById("senha").value;
-            const nomeBarber = document.getElementById("reg-nome-barbearia").value;
+    // --- ALTERNAR LOGIN/CADASTRO ---
+    document.getElementById("btn-alternar").onclick = () => {
+        modoCadastro = !modoCadastro;
+        document.getElementById("area-cadastro").classList.toggle("hidden", !modoCadastro);
+        document.getElementById("btn-principal").innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
+        document.getElementById("btn-alternar").innerHTML = modoCadastro 
+            ? "Já tem conta? <span class='text-white underline ml-1'>Fazer Login</span>" 
+            : "Não tem conta? <span class='text-white underline ml-1'>Criar agora</span>";
+        document.getElementById("login-subtitle").innerText = modoCadastro ? "Novo Cadastro" : "Gestão Profissional";
+    };
 
-            if (!email || !senha) return alert("Ei, preencha tudo certinho! 👊");
+    // --- LOGIN/CADASTRO E-MAIL ---
+    document.getElementById("btn-principal").onclick = async () => {
+        const email = document.getElementById("email").value;
+        const senha = document.getElementById("senha").value;
+        const nomeBarber = document.getElementById("reg-nome-barbearia").value;
 
-            try {
-                if (modoCadastro) {
-                    if (!nomeBarber) return alert("Como chama o seu negócio? 🚀");
-                    const res = await createUserWithEmailAndPassword(auth, email, senha);
+        if (!email || !senha) return alert("Ei, preencha tudo certinho! 👊");
 
-                    // Configuração inicial do Perfil (7 dias de teste)
-                    const expira = new Date();
-                    expira.setDate(expira.getDate() + 7);
+        try {
+            if (modoCadastro) {
+                if (!nomeBarber) return alert("Como chama o seu negócio? 🚀");
+                const res = await createUserWithEmailAndPassword(auth, email, senha);
 
-                    await setDoc(doc(db, "perfis", res.user.uid), {
-                        nomeBarbearia: nomeBarber,
-                        email: email,
-                        statusPagamento: "teste",
-                        expiraEm: expira,
-                        criadoEm: new Date()
-                    });
+                const expira = new Date();
+                expira.setDate(expira.getDate() + 7);
 
-                    alert("Bem-vindo ao time! Redirecionando...");
-                } else {
-                    await signInWithEmailAndPassword(auth, email, senha);
-                }
-            } catch (e) {
-                alert("Opa! " + e.message);
+                await setDoc(doc(db, "perfis", res.user.uid), {
+                    nomeBarbearia: nomeBarber,
+                    email: email,
+                    statusPagamento: "teste",
+                    expiraEm: expira,
+                    criadoEm: new Date()
+                });
+
+                alert("Bem-vindo ao time!");
+            } else {
+                await signInWithEmailAndPassword(auth, email, senha);
             }
-        };
+        } catch (e) {
+            alert("Opa! " + e.message);
+        }
+    };
 
-        // Monitorar se já está logado
-        onAuthStateChanged(auth, (user) => {
-            if (user) window.location.href = "index.html";
-        });
-    </script>
+    // --- REDIRECIONAMENTO ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) window.location.href = "index.html";
+    });
+</script>
 </body>
 
 </html>
