@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Fácil - Gestão Inteligente para Profissionais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0f1115; color: white; font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .gradient-text { background: linear-gradient(135deg, #22d3ee, #0ea5e9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .bg-teal-gradient { background: linear-gradient(135deg, #22d3ee, #0891b2); }
+        .card-blur { background: rgba(22, 22, 22, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* CARD PREVIEW 3D */
+        .card-container {
+            width: 100%;
+            max-width: 450px;
+            height: 280px;
+            position: relative;
+            border-radius: 2rem;
+            overflow: hidden;
+            perspective: 1000px;
+            transition: all 0.5s ease;
+        }
+
+        .card-container:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(34, 211, 238, 0.15); }
+
+        .card__content {
+            position: absolute;
+            inset: 0;
+            padding: 30px;
+            background: rgba(10, 10, 10, 0.95);
+            transform: rotateX(-90deg);
+            transform-origin: bottom;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-container:hover .card__content { transform: rotateX(0deg); }
+    </style>
+</head>
+
+<body class="overflow-x-hidden">
+
+    <nav class="p-8 flex justify-between items-center max-w-7xl mx-auto">
+        <h1 class="text-2xl font-900 italic tracking-tighter uppercase">Agenda <span class="text-cyan-400">Fácil</span></h1>
+        <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500">
+            <a href="#funcionalidades" class="hover:text-cyan-400 transition">Funcionalidades</a>
+            <a href="#tecnologia" class="hover:text-cyan-400 transition">Tecnologia</a>
+        </div>
+        <a href="https://agendafacil.buzz" class="text-[10px] font-black border border-cyan-400/20 px-6 py-3 rounded-full hover:bg-cyan-400 hover:text-black transition uppercase tracking-widest">Login</a>
+    </nav>
+
+    <header class="relative py-24 px-6 text-center max-w-5xl mx-auto">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/10 blur-[120px] rounded-full -z-10"></div>
+        
+        <span class="inline-block bg-cyan-500/10 text-cyan-400 text-[10px] font-black uppercase tracking-[0.4em] px-4 py-2 rounded-full mb-8 border border-cyan-500/20">
+            SaaS Fullstack Real-Time
+        </span>
+        
+        <h2 class="text-6xl md:text-8xl font-900 mb-8 leading-[0.9] tracking-tighter italic">
+            Pare de agendar por <br><span class="gradient-text">WhatsApp.</span>
+        </h2>
+        
+        <p class="text-neutral-500 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium">
+            Sua agenda online funcionando 24/7. Link exclusivo para clientes, faturamento automático e notificações instantâneas.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <a href="https://agendafacil.buzz" class="w-full sm:w-auto bg-teal-gradient px-10 py-5 rounded-[2rem] font-900 text-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition shadow-xl shadow-cyan-500/20">
+                Criar minha conta grátis
+            </a>
+            <a href="#demo" class="text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white transition">
+                Ver demonstração
+            </a>
+        </div>
+    </header>
+
+    <section id="funcionalidades" class="py-24 bg-black/20">
+        <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+            <div class="card-blur p-10 rounded-[3rem] group hover:border-cyan-400/30 transition">
+                <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">⚡</div>
+                <h3 class="font-black text-xl mb-4 italic">Self-Service 24/7</h3>
+                <p class="text-neutral-500 text-sm leading-relaxed">Seu cliente escolhe o serviço e o horário pelo link, sem você precisar digitar uma palavra.</p>
+            </div>
+            <div class="card-blur p-10 rounded-[3rem] group hover:border-cyan-400/30 transition">
+                <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">📊</div>
+                <h3 class="font-black text-xl mb-4 italic">Dashboard Financeiro</h3>
+                <p class="text-neutral-500 text-sm leading-relaxed">Gráficos de performance e faturamento em tempo real. Saiba exatamente quanto seu negócio está gerando.</p>
+            </div>
+            <div class="card-blur p-10 rounded-[3rem] group hover:border-cyan-400/30 transition">
+                <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">🔔</div>
+                <h3 class="font-black text-xl mb-4 italic">Push Notifications</h3>
+                <p class="text-neutral-500 text-sm leading-relaxed">Notificações "Plim!" e alertas visuais assim que um novo agendamento cai no seu sistema.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="tecnologia" class="py-24 px-6 max-w-6xl mx-auto">
+        <div class="flex flex-col lg:flex-row items-center gap-20">
+            <div class="flex-1">
+                <h2 class="text-5xl font-900 mb-8 italic tracking-tighter">Stack de <br><span class="text-cyan-400">Alta Performance.</span></h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <span class="text-cyan-400 font-black">01</span>
+                        <p class="text-[10px] font-black uppercase tracking-widest">Firebase NoSQL</p>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <span class="text-cyan-400 font-black">02</span>
+                        <p class="text-[10px] font-black uppercase tracking-widest">Cloud Functions</p>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <span class="text-cyan-400 font-black">03</span>
+                        <p class="text-[10px] font-black uppercase tracking-widest">React Native</p>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <span class="text-cyan-400 font-black">04</span>
+                        <p class="text-[10px] font-black uppercase tracking-widest">Tailwind CSS</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex justify-center w-full">
+                <div class="card-container bg-neutral-800 border-4 border-white/10 shadow-2xl">
+                    <img src="img/preview.png" class="w-full h-full object-cover opacity-60" alt="Preview App">
+                    <div class="card__content">
+                        <p class="text-2xl font-black italic mb-4">Agenda <span class="text-cyan-400">Fácil</span></p>
+                        <p class="text-xs text-neutral-400 leading-relaxed uppercase font-bold tracking-tighter">
+                            Arquitetura escalável com Firestore Real-time. Sistema de licença automatizado e interface otimizada para conversão de agendamentos online.
+                        </p>
+                        <div class="mt-6 h-[1px] bg-white/10 w-full"></div>
+                        <p class="mt-4 text-[9px] font-black text-cyan-400 tracking-widest">DEPLOY READY 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="relative py-24 px-6 text-center bg-teal-gradient mx-6 rounded-[4rem] my-24 overflow-hidden shadow-2xl">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="relative z-10">
+            <h2 class="text-4xl md:text-6xl font-900 text-black mb-10 tracking-tighter italic">Pronto para o próximo nível?</h2>
+            <button class="bg-black text-white px-12 py-6 rounded-3xl font-900 uppercase text-xs tracking-[0.2em] hover:scale-110 active:scale-95 transition shadow-2xl">
+                Começar agora mesmo
+            </button>
+        </div>
+    </section>
+
+    <footer class="py-16 text-center border-t border-white/5">
+        <p class="text-neutral-600 text-[10px] font-black uppercase tracking-[0.5em]">
+            &copy; 2026 Eli Junior Santo de Jesus (Elli) <br>
+            <span class="text-cyan-400/50 mt-2 block">Fullstack Developer | Mobile & Web Expert</span>
+        </p>
+    </footer>
+
+</body>
+</html>
