@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - AgendaFacil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0a0a0a',
+                        card: '#161616',
+                        border: '#262626',
+                        cyan: { 400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
+        
+        .tab-active { color: #22d3ee; }
+        .tab-inactive { color: #525252; }
+        
+        .modal-animate { animation: modalFadeIn 0.2s ease-out; }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="text-neutral-200 pb-32">
+
+    <header class="p-6 md:p-10 max-w-5xl mx-auto">
+        <div class="flex items-center justify-between mb-2">
+            <button onclick="window.location.href = '/index.html'" class="p-2 bg-card border border-border rounded-xl text-neutral-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+            </button>
+            <button onclick="openModal('modal-cliente')" class="bg-cyan-500 hover:bg-cyan-600 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest transition shadow-lg shadow-cyan-500/20">
+                + Novo
+            </button>
+        </div>
+        
+        <div class="mt-6">
+            <h1 class="text-3xl font-black text-white tracking-tighter italic">Meus <span class="text-cyan-400">Clientes</span></h1>
+            <p class="text-[10px] text-neutral-500 uppercase font-bold tracking-[0.3em] mt-1">Gestão de Carteira VIP</p>
+        </div>
+    </header>
+
+    <main class="px-6 max-w-5xl mx-auto">
+        <div id="lista-clientes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="col-span-full py-20 text-center opacity-20 animate-pulse">
+                <p class="text-xs font-bold uppercase tracking-widest">Sincronizando contatos...</p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-card/80 backdrop-blur-xl border border-white/5 p-2 rounded-[2.5rem] flex justify-between items-center shadow-2xl z-50">
+        <button onclick="window.location.href='/index.html'" class="flex-1 py-3 flex flex-col items-center gap-1 tab-inactive hover:text-neutral-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            <span class="text-[8px] font-black uppercase tracking-tighter">Início</span>
+        </button>
+        <button class="flex-1 py-3 flex flex-col items-center gap-1 tab-active">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            <span class="text-[8px] font-black uppercase tracking-tighter">Clientes</span>
+        </button>
+        <button onclick="window.location.href='/historico.html'" class="flex-1 py-3 flex flex-col items-center gap-1 tab-inactive hover:text-neutral-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            <span class="text-[8px] font-black uppercase tracking-tighter">Rendimento</span>
+        </button>
+    </nav>
+
+    <div id="modal-cliente" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100] p-4 backdrop-blur-md">
+        <div class="bg-card p-8 rounded-[2.5rem] w-full max-w-md border border-border shadow-2xl modal-animate">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-black text-white italic">Novo <span class="text-cyan-400">Lead</span></h2>
+                <p class="text-[10px] text-neutral-500 uppercase font-bold tracking-widest">Adicionar cliente à base</p>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <input id="c-nome" type="text" placeholder="Nome do Cliente" class="w-full bg-dark border border-border p-4 rounded-2xl text-white outline-none focus:border-cyan-400 transition">
+                </div>
+                <div>
+                    <input id="c-fone" type="tel" placeholder="WhatsApp (DDD)" class="w-full bg-dark border border-border p-4 rounded-2xl text-white outline-none focus:border-cyan-400 transition">
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-10">
+                <button onclick="closeModal('modal-cliente')" class="flex-1 bg-white/5 p-4 rounded-2xl text-[10px] font-black uppercase text-neutral-500 hover:text-white transition">Cancelar</button>
+                <button id="btn-save-cliente" class="flex-1 bg-cyan-500 text-black p-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-cyan-500/20">Salvar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query, where, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
+            authDomain: "agendafacil-1.firebaseapp.com",
+            projectId: "agendafacil-1",
+            storageBucket: "agendafacil-1.firebasestorage.app",
+            messagingSenderId: "862585496599",
+            appId: "1:862585496599:web:2a360f1147a334d1342852"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- UI CONTROLS ---
+        window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+
+        // --- MASK ---
+        const foneInput = document.getElementById("c-fone");
+        foneInput.oninput = (e) => {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        };
+
+        // --- REALTIME LIST ---
+        function listarClientes(uid) {
+            const q = query(collection(db, "clientes"), where("barbeiroId", "==", uid), orderBy("criadoEm", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                let html = "";
+                if (snapshot.empty) {
+                    html = `<div class="col-span-full text-center py-20 bg-card rounded-[2.5rem] border border-dashed border-border"><p class="text-xs text-neutral-600 uppercase font-black tracking-widest">Nenhum cliente na base</p></div>`;
+                } else {
+                    snapshot.forEach((d) => {
+                        const c = d.data();
+                        const iniciais = c.nome.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+                        html += `
+                        <div class="bg-card p-6 rounded-[2.5rem] border border-border hover:border-cyan-400/30 transition-all group relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-black font-black text-sm shadow-lg shadow-cyan-500/10">
+                                        ${iniciais}
+                                    </div>
+                                    <div>
+                                        <h3 class="font-black text-white text-sm tracking-tight">${c.nome}</h3>
+                                        <p class="text-[10px] text-neutral-500 font-medium">${c.whatsapp}</p>
+                                    </div>
+                                </div>
+                                <button onclick="removerCliente('${d.id}')" class="p-2 text-neutral-700 hover:text-red-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="https://wa.me/55${c.whatsapp.replace(/\D/g,'')}" target="_blank" class="flex-1 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black py-3 rounded-xl text-[9px] font-black text-center uppercase tracking-tighter transition">WhatsApp</a>
+                                <button class="bg-white/5 hover:bg-white/10 text-neutral-500 py-3 px-4 rounded-xl text-[9px] font-black uppercase transition">Perfil</button>
+                            </div>
+                        </div>`;
+                    });
+                }
+                document.getElementById("lista-clientes").innerHTML = html;
+            });
+        }
+
+        // --- SAVE ---
+        const btnSave = document.getElementById("btn-save-cliente");
+        btnSave.onclick = async () => {
+            const nome = document.getElementById("c-nome").value.trim();
+            const foneRaw = foneInput.value.replace(/\D/g, '');
+            if (nome.length < 3 || foneRaw.length < 10) return alert("Dados incompletos!");
+
+            btnSave.disabled = true;
+            btnSave.innerHTML = "CADASTRANDO...";
+
+            try {
+                await addDoc(collection(db, "clientes"), {
+                    nome, whatsapp: foneRaw, barbeiroId: auth.currentUser.uid, criadoEm: serverTimestamp()
+                });
+                document.getElementById("c-nome").value = "";
+                foneInput.value = "";
+                closeModal('modal-cliente');
+            } catch (e) { console.error(e); }
+            finally { btnSave.disabled = false; btnSave.innerHTML = "SALVAR CLIENTE"; }
+        };
+
+        window.removerCliente = async (id) => { if(confirm("Apagar cliente?")) await deleteDoc(doc(db, "clientes", id)); };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) listarClientes(user.uid);
+            else window.location.href = "login.html";
+        });
+    </script>
+</body>
+</html>

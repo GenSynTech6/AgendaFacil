@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Histórico & Performance - AgendaFacil</title>
+    <style>
+        body { background-color: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
+        .bg-card { background: #161616; border: 1px solid #262626; }
+        .text-cyan-premium { color: #22d3ee; }
+    </style>
+</head>
+<body class="p-4 pb-24">
+
+    <div class="max-w-md mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-black tracking-tighter italic">
+                Agenda<span class="text-cyan-premium">Facil</span>
+            </h1>
+            <p class="text-[10px] text-neutral-500 font-bold tracking-[0.4em] uppercase mt-1">Performance & Histórico</p>
+        </header>
+
+        <div class="mb-6 p-6 rounded-[2.5rem] bg-gradient-to-br from-cyan-400/10 to-transparent border border-cyan-400/20 text-center shadow-2xl">
+            <p class="text-[9px] text-cyan-400/70 uppercase font-black tracking-[0.2em] mb-2">Faturamento Total Acumulado</p>
+            <h3 class="text-4xl font-black text-white tracking-tighter" id="faturamento-total">R$ 0,00</h3>
+        </div>
+
+        <div class="space-y-4 mb-10">
+            <div class="bg-card p-5 rounded-[2rem] border border-white/5 shadow-xl">
+                <p class="text-[10px] text-neutral-500 font-bold uppercase mb-4 tracking-widest text-center">Vendas: Últimos 7 dias</p>
+                <canvas id="chartSemana" height="150"></canvas>
+            </div>
+
+            <div class="bg-card p-5 rounded-[2rem] border border-white/5 shadow-xl">
+                <p class="text-[10px] text-neutral-500 font-bold uppercase mb-4 tracking-widest text-center">Tendência: Últimos 30 dias</p>
+                <canvas id="chartMes" height="150"></canvas>
+            </div>
+        </div>
+
+        <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-500 mb-4 ml-4">Atendimentos Concluídos</h2>
+        <div id="lista-historico" class="space-y-4">
+            <div class="text-center py-10 opacity-20 animate-pulse">
+                <p class="text-xs font-bold uppercase tracking-widest text-neutral-500">Processando dados...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
+            authDomain: "agendafacil-1.firebaseapp.com",
+            projectId: "agendafacil-1",
+            storageBucket: "agendafacil-1.firebasestorage.app",
+            messagingSenderId: "862585496599",
+            appId: "1:862585496599:web:2a360f1147a334d1342852"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let chartSemana, chartMes;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                iniciarEscutaHistorico(user.uid);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        function iniciarEscutaHistorico(uid) {
+            const q = query(collection(db, "agendamentos"), where("userId", "==", uid), where("status", "==", "concluido"));
+
+            onSnapshot(q, (snap) => {
+                let totalSoma = 0;
+                let htmlAcumulado = "";
+                const hoje = new Date();
+                
+                const vendasPorDia = {}; // Para o gráfico de 7 dias
+                const vendasPorMes = {}; // Para o gráfico de 30 dias
+
+                const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => `${b.data} ${b.hora}`.localeCompare(`${a.data} ${a.hora}`));
+
+                docs.forEach(item => {
+                    const preco = parseFloat(item.preco) || 0;
+                    totalSoma += preco;
+                    const dataItem = item.data; // Formato YYYY-MM-DD
+
+                    // Agrupar para gráficos
+                    vendasPorMes[dataItem] = (vendasPorMes[dataItem] || 0) + preco;
+                    
+                    // Formata para a lista
+                    const dataBr = dataItem.split('-').reverse().slice(0, 2).join('/');
+                    htmlAcumulado += `
+                    <div class="bg-card p-5 rounded-[2rem] border border-white/5 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-neutral-900 border border-white/5 flex items-center justify-center text-[10px] font-black text-cyan-400">${dataBr}</div>
+                            <div>
+                                <p class="font-bold text-sm text-neutral-200">${item.cliente}</p>
+                                <p class="text-[9px] text-neutral-600 uppercase font-black tracking-tighter">${item.servico} • ${item.hora}</p>
+                            </div>
+                        </div>
+                        <p class="text-white font-black text-sm italic">R$ ${preco.toFixed(2)}</p>
+                    </div>`;
+                });
+
+                document.getElementById("lista-historico").innerHTML = htmlAcumulado || "<p class='text-center opacity-30 text-xs'>Sem dados</p>";
+                document.getElementById("faturamento-total").innerText = `R$ ${totalSoma.toFixed(2)}`;
+
+                renderizarGraficos(vendasPorMes);
+            });
+        }
+
+        function renderizarGraficos(dadosVendas) {
+            const labelsSemana = [];
+            const valoresSemana = [];
+            const labelsMes = [];
+            const valoresMes = [];
+
+            // Gerar datas dos últimos 30 dias
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dataString = d.toISOString().split('T')[0];
+                const dataFormatada = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+                labelsMes.push(dataFormatada);
+                valoresMes.push(dadosVendas[dataString] || 0);
+
+                if (i < 7) {
+                    labelsSemana.push(dataFormatada);
+                    valoresSemana.push(dadosVendas[dataString] || 0);
+                }
+            }
+
+            // Destruir gráficos antigos para não sobrepor
+            if (chartSemana) chartSemana.destroy();
+            if (chartMes) chartMes.destroy();
+
+            const commonOptions = {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { grid: { display: false }, ticks: { color: '#666', font: { size: 9 } } },
+                    x: { grid: { display: false }, ticks: { color: '#666', font: { size: 9 } } }
+                }
+            };
+
+            // Gráfico Semana (Barras)
+            chartSemana = new Chart(document.getElementById('chartSemana'), {
+                type: 'bar',
+                data: {
+                    labels: labelsSemana,
+                    datasets: [{
+                        data: valoresSemana,
+                        backgroundColor: '#22d3ee',
+                        borderRadius: 8
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // Gráfico Mês (Linha)
+            chartMes = new Chart(document.getElementById('chartMes'), {
+                type: 'line',
+                data: {
+                    labels: labelsMes,
+                    datasets: [{
+                        data: valoresMes,
+                        borderColor: '#22d3ee',
+                        backgroundColor: 'rgba(34, 211, 238, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 0
+                    }]
+                },
+                options: commonOptions
+            });
+        }
+    </script>
+</body>
+</html>

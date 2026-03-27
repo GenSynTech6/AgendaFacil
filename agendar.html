@@ -10,210 +10,232 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: #121212;
-            color: white;
+            background: #0a0a0a;
+            color: #e5e5e5;
             font-family: 'Inter', sans-serif;
         }
 
-        .teal {
-            background: linear-gradient(135deg, #1b38f3, #131530);
+        .bg-teal-gradient {
+            background: linear-gradient(135deg, #14b8a6, #0f766e);
         }
 
-        .card {
-            background: #1E1E1E;
-            border: 1px solid #2D2D2D;
+        .card-premium {
+            background: #161616;
+            border: 1px solid #262626;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         input,
         select {
-            background: #2D2D2D !important;
+            background: #0f0f0f !important;
+            border: 1px solid #262626 !important;
             color: white !important;
-            border: 1px solid #444 !important;
-            outline: none;
+            transition: all 0.3s;
         }
 
-        input:focus {
-            border-color: #D4AF37 !important;
-        }
-
-        .hidden {
-            display: none !important;
+        input:focus,
+        select:focus {
+            border-color: #14b8a6 !important;
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.1);
         }
     </style>
-</head>
 
-<body class="p-6">
-    <div class="max-w-md mx-auto">
-        <header class="text-center mb-8">
-            <h1 id="nome-barbearia" class="text-teal-200 text-3xl font-bold italic ">Carregando barbearia...</h1>
-            <p class="text-gray-400 text-sm italic">Agenda<span class="text-cyan-400">Fácil</span></p>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-[440px]">
+        <header class="text-center mb-10">
+            <div class="inline-block p-3 rounded-2xl bg-teal-500/10 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-teal-500" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1 id="nome-barbearia" class="text-white text-3xl font-black tracking-tight mb-1 uppercase">Carregando...
+            </h1>
+            <p class="text-teal-500 font-bold text-xs tracking-[0.3em] uppercase opacity-80">Agendamento Online</p>
         </header>
 
-        <div id="form-container" class="card p-6 rounded-2xl shadow-2xl border-t-4 border-cyan-400">
-            <div class="space-y-4">
+        <div id="form-container" class="card-premium p-8 rounded-[2.5rem] relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-teal-500"></div>
+
+            <div class="space-y-5">
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500">Seu Nome</label>
-                    <input id="cliente-nome" type="text" placeholder="Ex: João Silva"
-                        class="w-full p-3 rounded-lg mt-1">
+                    <label class="text-[10px] uppercase font-black text-neutral-500 tracking-widest ml-1">Seu Nome
+                        Completo</label>
+                    <input id="cliente-nome" type="text" placeholder="Como quer ser chamado?"
+                        class="w-full p-4 rounded-2xl mt-1.5 text-sm">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500">Seu WhatsApp (DDD + Número)</label>
-                    <input id="cliente-fone" type="tel" placeholder="Ex: 11999998888"
-                        class="w-full p-3 rounded-lg mt-1">
+                    <label
+                        class="text-[10px] uppercase font-black text-neutral-500 tracking-widest ml-1">WhatsApp</label>
+                    <input id="cliente-fone" type="tel" placeholder="(00) 00000-0000"
+                        class="w-full p-4 rounded-2xl mt-1.5 text-sm">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500">Escolha o Serviço</label>
-                    <select id="cliente-servico" class="w-full p-3 rounded-lg mt-1">
-                        <option value="">Aguardando identificação...</option>
+                    <label class="text-[10px] uppercase font-black text-neutral-500 tracking-widest ml-1">Serviço
+                        Desejado</label>
+                    <select id="cliente-servico" class="w-full p-4 rounded-2xl mt-1.5 text-sm appearance-none">
+                        <option value="">Carregando serviços...</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-500">Data</label>
-                        <input id="cliente-data" type="date" class="w-full p-3 rounded-lg mt-1">
+                        <label
+                            class="text-[10px] uppercase font-black text-neutral-500 tracking-widest ml-1">Data</label>
+                        <input id="cliente-data" type="date" class="w-full p-4 rounded-2xl mt-1.5 text-sm">
                     </div>
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-500">Horário</label>
-                        <input id="cliente-hora" type="time" class="w-full p-3 rounded-lg mt-1">
+                        <label
+                            class="text-[10px] uppercase font-black text-neutral-500 tracking-widest ml-1">Horário</label>
+                        <input id="cliente-hora" type="time" class="w-full p-4 rounded-2xl mt-1.5 text-sm">
                     </div>
                 </div>
+
                 <button id="btn-confirmar"
-                    class="teal w-full p-4 rounded-xl text-black font-bold uppercase mt-4 hover:brightness-110 active:scale-95 transition">Confirmar
-                    Agendamento</button>
+                    class="bg-teal-500 hover:bg-teal-400 text-black font-black uppercase text-xs tracking-widest w-full p-5 rounded-2xl mt-4 transition-all shadow-lg shadow-teal-500/20 active:scale-95">
+                    Confirmar Horário
+                </button>
             </div>
         </div>
 
-        <div id="feedback-sucesso" class="hidden text-center p-10 card rounded-2xl">
-            <div class="text-6xl mb-4">✨</div>
-            <h2 class="text-2xl font-bold text-teal-400">Tudo pronto!</h2>
-            <p class="text-gray-400 mt-2">Seu horário foi reservado. Nos vemos em breve!</p>
-            <button onclick="location.reload()" class="mt-6 text-sm text-gray-500 underline">Fazer outro
-                agendamento</button>
+        <div id="feedback-sucesso" class="hidden text-center p-12 card-premium rounded-[2.5rem] animate-pulse">
+            <div
+                class="w-20 h-20 bg-teal-500/20 text-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-black text-white uppercase tracking-tight">Confirmado!</h2>
+            <p class="text-neutral-500 mt-3 text-sm leading-relaxed">Seu horário foi reservado com sucesso. O barbeiro
+                já foi notificado!</p>
+            <button onclick="location.reload()"
+                class="mt-8 text-xs font-bold text-teal-500 uppercase tracking-widest hover:text-white transition">Agendar
+                outro</button>
         </div>
-    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+            import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
-            authDomain: "agendafacil-1.firebaseapp.com",
-            projectId: "agendafacil-1",
-            storageBucket: "agendafacil-1.firebasestorage.app",
-            messagingSenderId: "862585496599",
-            appId: "1:862585496599:web:2a360f1147a334d1342852",
-            measurementId: "G-BQK2DBX0S6"
-        };
+            const firebaseConfig = {
+                apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
+                authDomain: "agendafacil-1.firebaseapp.com",
+                projectId: "agendafacil-1",
+                storageBucket: "agendafacil-1.firebasestorage.app",
+                messagingSenderId: "862585496599",
+                appId: "1:862585496599:web:2a360f1147a334d1342852",
+                measurementId: "G-BQK2DBX0S6"
+            };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const BARBER_ID = urlParams.get('id');
+            const urlParams = new URLSearchParams(window.location.search);
+            const BARBER_ID = urlParams.get('id');
 
-        if (!BARBER_ID) {
-            alert("Link inválido!");
-            document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:50px;'>Negócio não encontrado.</h1>";
-        }
-
-        async function inicializarPagina() {
-            console.log("Tentando carregar serviços para o ID:", BARBER_ID);
-            try {
-                // 1. Testa se o Firebase responde para o Perfil
-                const perfilSnap = await getDoc(doc(db, "perfis", BARBER_ID));
-                if (perfilSnap.exists()) {
-                    document.getElementById("nome-barbearia").innerText = perfilSnap.data().nomeBarbearia;
-                    console.log("Perfil encontrado!");
-                }
-
-                // 2. Busca simplificada de serviços
-                const q = query(collection(db, "servicos"), where("userId", "==", BARBER_ID));
-                const snap = await getDocs(q);
-
-                console.log("Resultado da busca (tamanho):", snap.size);
-
-                let html = '<option value="">Selecione o serviço...</option>';
-
-                if (snap.empty) {
-                    console.warn("A busca retornou zero documentos para este userId.");
-                    html = '<option value="">Nenhum serviço disponível.</option>';
-                } else {
-                    snap.forEach(doc => {
-                        const s = doc.data();
-                        html += `<option value="${s.preco}" data-nome="${s.nome}">${s.nome} - R$ ${Number(s.preco).toFixed(2)}</option>`;
-                    });
-                }
-                document.getElementById("cliente-servico").innerHTML = html;
-
-            } catch (e) {
-                // ESTA PARTE É A MAIS IMPORTANTE:
-                console.error("ERRO DETALHADO DO FIREBASE:", e);
-                alert("Erro técnico: " + e.message);
-
-                if (e.message.includes("index")) {
-                    console.error("Você precisa criar um índice. Procure o link azul acima no console!");
-                }
+            if (!BARBER_ID) {
+                alert("Link inválido!");
+                document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:50px;'>Negócio não encontrado.</h1>";
             }
-        }
 
-        inicializarPagina();
-
-        const btnConfirmar = document.getElementById("btn-confirmar");
-        if (btnConfirmar) {
-            btnConfirmar.onclick = async () => {
-                const nome = document.getElementById("cliente-nome").value;
-                const fone = document.getElementById("cliente-fone").value;
-                const data = document.getElementById("cliente-data").value;
-                const hora = document.getElementById("cliente-hora").value;
-                const select = document.getElementById("cliente-servico");
-
-                if (!nome || !fone || !data || !hora || !select.value) {
-                    return alert("Por favor, preencha todos os campos!");
-                }
-
-                btnConfirmar.disabled = true;
-                btnConfirmar.innerText = "AGENDANDO...";
-
+            async function inicializarPagina() {
+                console.log("Tentando carregar serviços para o ID:", BARBER_ID);
                 try {
-                    // SALVAMENTO 1: AGENDAMENTO
-                    await addDoc(collection(db, "agendamentos"), {
-                        cliente: nome,
-                        fone: fone,
-                        data: data,
-                        hora: hora,
-                        servico: select.options[select.selectedIndex].getAttribute('data-nome'),
-                        preco: parseFloat(select.value),
-                        status: "pendente",
-                        externo: true,
-                        userId: BARBER_ID,
-                        criado: serverTimestamp()
-                    });
+                    // 1. Testa se o Firebase responde para o Perfil
+                    const perfilSnap = await getDoc(doc(db, "perfis", BARBER_ID));
+                    if (perfilSnap.exists()) {
+                        document.getElementById("nome-barbearia").innerText = perfilSnap.data().nomeBarbearia;
+                        console.log("Perfil encontrado!");
+                    }
 
-                    // SALVAMENTO 2: CLIENTE NA BASE DO BARBEIRO
-                    await addDoc(collection(db, "clientes"), {
-                        nome: nome,
-                        fone: fone,
-                        userId: BARBER_ID,
-                        origem: "Link Externo",
-                        dataCadastro: serverTimestamp(),
-                        statusAssinatura: "indefinido"
-                    });
+                    // 2. Busca simplificada de serviços
+                    const q = query(collection(db, "servicos"), where("userId", "==", BARBER_ID));
+                    const snap = await getDocs(q);
 
-                    // MOSTRAR SUCESSO
-                    document.getElementById("form-container").classList.add("hidden");
-                    document.getElementById("feedback-sucesso").classList.remove("hidden");
+                    console.log("Resultado da busca (tamanho):", snap.size);
+
+                    let html = '<option value="">Selecione o serviço...</option>';
+
+                    if (snap.empty) {
+                        console.warn("A busca retornou zero documentos para este userId.");
+                        html = '<option value="">Nenhum serviço disponível.</option>';
+                    } else {
+                        snap.forEach(doc => {
+                            const s = doc.data();
+                            html += `<option value="${s.preco}" data-nome="${s.nome}">${s.nome} - R$ ${Number(s.preco).toFixed(2)}</option>`;
+                        });
+                    }
+                    document.getElementById("cliente-servico").innerHTML = html;
 
                 } catch (e) {
-                    console.error("Erro ao processar:", e);
-                    alert("Erro ao agendar. Tente novamente.");
-                    btnConfirmar.disabled = false;
-                    btnConfirmar.innerText = "Confirmar Agendamento";
-                }
-            };
-        }
+                    // ESTA PARTE É A MAIS IMPORTANTE:
+                    console.error("ERRO DETALHADO DO FIREBASE:", e);
+                    alert("Erro técnico: " + e.message);
 
-    </script>
+                    if (e.message.includes("index")) {
+                        console.error("Você precisa criar um índice. Procure o link azul acima no console!");
+                    }
+                }
+            }
+
+            inicializarPagina();
+
+            const btnConfirmar = document.getElementById("btn-confirmar");
+            if (btnConfirmar) {
+                btnConfirmar.onclick = async () => {
+                    const nome = document.getElementById("cliente-nome").value;
+                    const fone = document.getElementById("cliente-fone").value;
+                    const data = document.getElementById("cliente-data").value;
+                    const hora = document.getElementById("cliente-hora").value;
+                    const select = document.getElementById("cliente-servico");
+
+                    if (!nome || !fone || !data || !hora || !select.value) {
+                        return alert("Por favor, preencha todos os campos!");
+                    }
+
+                    btnConfirmar.disabled = true;
+                    btnConfirmar.innerText = "AGENDANDO...";
+
+                    try {
+                        // SALVAMENTO 1: AGENDAMENTO
+                        await addDoc(collection(db, "agendamentos"), {
+                            cliente: nome,
+                            fone: fone,
+                            data: data,
+                            hora: hora,
+                            servico: select.options[select.selectedIndex].getAttribute('data-nome'),
+                            preco: parseFloat(select.value),
+                            status: "pendente",
+                            externo: true,
+                            userId: BARBER_ID,
+                            criado: serverTimestamp()
+                        });
+
+                        // SALVAMENTO 2: CLIENTE NA BASE DO BARBEIRO
+                        await addDoc(collection(db, "clientes"), {
+                            nome: nome,
+                            fone: fone,
+                            userId: BARBER_ID,
+                            origem: "Link Externo",
+                            dataCadastro: serverTimestamp(),
+                            statusAssinatura: "indefinido"
+                        });
+
+                        // MOSTRAR SUCESSO
+                        document.getElementById("form-container").classList.add("hidden");
+                        document.getElementById("feedback-sucesso").classList.remove("hidden");
+
+                    } catch (e) {
+                        console.error("Erro ao processar:", e);
+                        alert("Erro ao agendar. Tente novamente.");
+                        btnConfirmar.disabled = false;
+                        btnConfirmar.innerText = "Confirmar Agendamento";
+                    }
+                };
+            }
+
+        </script>
 </body>
 
 </html>
