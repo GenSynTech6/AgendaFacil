@@ -174,7 +174,6 @@
         const db = getFirestore(app);
 
         // Exemplo de trava de segurança no Dashboard
-        // Na sua index.html
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const docSnap = await getDoc(doc(db, "perfis", user.uid));
