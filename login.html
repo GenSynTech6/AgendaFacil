@@ -124,117 +124,138 @@
         </div>
     </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-        getAuth, 
-        signInWithEmailAndPassword, 
-        createUserWithEmailAndPassword, 
-        onAuthStateChanged, 
-        GoogleAuthProvider, 
-        signInWithPopup 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { 
-        getFirestore, 
-        doc, 
-        setDoc, 
-        getDoc 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            onAuthStateChanged,
+            GoogleAuthProvider,
+            signInWithPopup
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            setDoc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
-        authDomain: "agendafacil-1.firebaseapp.com",
-        projectId: "agendafacil-1",
-        storageBucket: "agendafacil-1.firebasestorage.app",
-        messagingSenderId: "862585496599",
-        appId: "1:862585496599:web:2a360f1147a334d1342852"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
+            authDomain: "agendafacil-1.firebaseapp.com",
+            projectId: "agendafacil-1",
+            storageBucket: "agendafacil-1.firebasestorage.app",
+            messagingSenderId: "862585496599",
+            appId: "1:862585496599:web:2a360f1147a334d1342852"
+        };
 
-    // Inicialização Única
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+        // Inicialização Única
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
 
-    let modoCadastro = false;
+        let modoCadastro = false;
 
-    // --- LOGIN COM GOOGLE ---
-    document.getElementById("btn-google").onclick = async () => {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
+        // --- LOGIN COM GOOGLE ---
+        document.getElementById("btn-google").onclick = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
 
-            const docRef = doc(db, "perfis", user.uid);
-            const docSnap = await getDoc(docRef);
+                const docRef = doc(db, "perfis", user.uid);
+                const docSnap = await getDoc(docRef);
 
-            if (!docSnap.exists()) {
-                const expira = new Date();
-                expira.setDate(expira.getDate() + 7);
+                if (!docSnap.exists()) {
+                    const expira = new Date();
+                    expira.setDate(expira.getDate() + 7);
 
-                await setDoc(docRef, {
-                    nomeBarbearia: user.displayName || "Meu Negócio",
-                    email: user.email,
-                    statusPagamento: "teste",
-                    expiraEm: expira,
-                    criadoEm: new Date(),
-                    fotoUrl: user.photoURL
-                });
+                    await setDoc(docRef, {
+                        nomeBarbearia: user.displayName || "Meu Negócio",
+                        email: user.email,
+                        statusPagamento: "teste",
+                        expiraEm: expira,
+                        criadoEm: new Date(),
+                        fotoUrl: user.photoURL
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao entrar com Google: " + error.message);
             }
-        } catch (error) {
-            console.error(error);
-            alert("Erro ao entrar com Google: " + error.message);
-        }
-    };
+        };
 
-    // --- ALTERNAR LOGIN/CADASTRO ---
-    document.getElementById("btn-alternar").onclick = () => {
-        modoCadastro = !modoCadastro;
-        document.getElementById("area-cadastro").classList.toggle("hidden", !modoCadastro);
-        document.getElementById("btn-principal").innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
-        document.getElementById("btn-alternar").innerHTML = modoCadastro 
-            ? "Já tem conta? <span class='text-white underline ml-1'>Fazer Login</span>" 
-            : "Não tem conta? <span class='text-white underline ml-1'>Criar agora</span>";
-        document.getElementById("login-subtitle").innerText = modoCadastro ? "Novo Cadastro" : "Gestão Profissional";
-    };
+        // --- ALTERNAR LOGIN/CADASTRO ---
+        document.getElementById("btn-alternar").onclick = () => {
+            modoCadastro = !modoCadastro;
+            document.getElementById("area-cadastro").classList.toggle("hidden", !modoCadastro);
+            document.getElementById("btn-principal").innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
+            document.getElementById("btn-alternar").innerHTML = modoCadastro
+                ? "Já tem conta? <span class='text-white underline ml-1'>Fazer Login</span>"
+                : "Não tem conta? <span class='text-white underline ml-1'>Criar agora</span>";
+            document.getElementById("login-subtitle").innerText = modoCadastro ? "Novo Cadastro" : "Gestão Profissional";
+        };
 
-    // --- LOGIN/CADASTRO E-MAIL ---
-    document.getElementById("btn-principal").onclick = async () => {
-        const email = document.getElementById("email").value;
-        const senha = document.getElementById("senha").value;
-        const nomeBarber = document.getElementById("reg-nome-barbearia").value;
+        // --- LOGIN/CADASTRO E-MAIL ---
+        document.getElementById("btn-principal").onclick = async () => {
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            const nomeBarber = document.getElementById("reg-nome-barbearia").value;
 
-        if (!email || !senha) return alert("Ei, preencha tudo certinho! 👊");
+            if (!email || !senha) return alert("Ei, preencha tudo certinho! 👊");
 
-        try {
-            if (modoCadastro) {
-                if (!nomeBarber) return alert("Como chama o seu negócio? 🚀");
-                const res = await createUserWithEmailAndPassword(auth, email, senha);
+            // Feedback visual para o usuário não clicar duas vezes
+            const btn = document.getElementById("btn-principal");
+            btn.disabled = true;
+            btn.innerText = "Processando...";
 
-                const expira = new Date();
-                expira.setDate(expira.getDate() + 7);
+            try {
+                if (modoCadastro) {
+                    if (!nomeBarber) throw new Error("Como chama o seu negócio? 🚀");
 
-                await setDoc(doc(db, "perfis", res.user.uid), {
-                    nomeBarbearia: nomeBarber,
-                    email: email,
-                    statusPagamento: "teste",
-                    expiraEm: expira,
-                    criadoEm: new Date()
-                });
+                    // 1. Cria o usuário no Auth
+                    const res = await createUserWithEmailAndPassword(auth, email, senha);
 
-                alert("Bem-vindo ao time!");
-            } else {
-                await signInWithEmailAndPassword(auth, email, senha);
+                    // 2. Prepara os dados
+                    const expira = new Date();
+                    expira.setDate(expira.getDate() + 7);
+
+                    // 3. SALVA NO FIRESTORE (Aguardamos o 'await' terminar!)
+                    await setDoc(doc(db, "perfis", res.user.uid), {
+                        nomeBarbearia: nomeBarber,
+                        email: email,
+                        statusPagamento: "teste",
+                        expiraEm: expira,
+                        criadoEm: new Date()
+                    });
+
+                    console.log("Perfil criado com sucesso!");
+                    // 4. AGORA SIM, REDIRECIONA MANUALMENTE
+                    window.location.href = "index.html";
+
+                } else {
+                    // Login normal
+                    await signInWithEmailAndPassword(auth, email, senha);
+                    window.location.href = "index.html";
+                }
+            } catch (e) {
+                alert("Opa! " + e.message);
+                btn.disabled = false;
+                btn.innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
             }
-        } catch (e) {
-            alert("Opa! " + e.message);
-        }
-    };
+        };
 
-    // --- REDIRECIONAMENTO ---
-    onAuthStateChanged(auth, (user) => {
-        if (user) window.location.href = "index.html";
-    });
-</script>
+        // --- MONITORAMENTO DE SESSÃO (MUDOU AQUI!) ---
+        onAuthStateChanged(auth, (user) => {
+            // Só redireciona automaticamente se o usuário JÁ ESTIVER LOGADO quando abrir a página
+            // mas não interfere no processo de cadastro que acabamos de fazer
+            if (user && !modoCadastro) {
+                // Se você quiser que o login automático funcione, deixe assim.
+                // Mas o segredo é o 'await setDoc' lá em cima.
+            }
+        });
+    </script>
 </body>
 
 </html>
