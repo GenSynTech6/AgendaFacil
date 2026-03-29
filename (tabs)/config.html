@@ -193,6 +193,10 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        
+        window.fazerLogout = () => {
+            signOut(auth).then(() => { window.location.href = "login.html"; });
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -210,9 +214,7 @@
                 window.location.href = "login.html";
             }
         });
-        window.fazerLogout = () => {
-            signOut(auth).then(() => { window.location.href = "login.html"; });
-        };
+
         window.copiarLink = () => {
             const linkInput = document.getElementById("link-externo");
             linkInput.select();
