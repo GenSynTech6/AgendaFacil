@@ -159,21 +159,27 @@
 
         let modoCadastro = false;
 
+        // 1. LISTA DE ADMINS (Coloque o seu UID aqui também!)
+        const ADMIN_UIDS = ["tcEBpPyA9zShUfh9AVwSxfzNgKC3", "Q9iCOeZgGEUVBTr380iliC9wZfm2"]; 
+
+        // Função auxiliar para decidir para onde ir
+        const redirecionarUsuario = (user) => {
+            if (ADMIN_UIDS.includes(user.uid)) {
+                window.location.href = "adm/boss.html";
+            } else {
+                window.location.href = "index.html";
+            }
+        };
+
         // --- LOGIN COM GOOGLE ---
         document.getElementById("btn-google").onclick = async () => {
-            const btnGoogle = document.getElementById("btn-google");
-            btnGoogle.disabled = true; // Evita cliques duplos que bugam o popup
-
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
 
-                console.log("Logado! Verificando perfil no banco...");
-
                 const docRef = doc(db, "perfis", user.uid);
                 const docSnap = await getDoc(docRef);
 
-                // Se o barbeiro for novo, cria o perfil antes de entrar
                 if (!docSnap.exists()) {
                     const expira = new Date();
                     expira.setDate(expira.getDate() + 7);
@@ -184,39 +190,17 @@
                         statusPagamento: "teste",
                         expiraEm: expira,
                         criadoEm: new Date(),
-                        fotoUrl: user.photoURL || ""
+                        fotoUrl: user.photoURL
                     });
-                    console.log("Novo perfil criado com sucesso.");
                 }
 
-                // O SEGREDO: Redireciona APENAS depois que o banco confirmou tudo
-                window.location.href = "index.html";
+                // CHAMA O REDIRECIONAMENTO INTELIGENTE
+                redirecionarUsuario(user);
 
             } catch (error) {
-                console.error("Erro no Google Login:", error.code);
-
-                // Trata o erro de fechamento de popup sem travar a tela
-                if (error.code === 'auth/popup-closed-by-user') {
-                    alert("Você fechou a janela de login antes de terminar. Tente de novo! 👊");
-                } else if (error.code === 'auth/cancelled-query') {
-                    console.log("Requisição cancelada pelo sistema.");
-                } else {
-                    alert("Erro ao entrar: " + error.message);
-                }
-            } finally {
-                btnGoogle.disabled = false;
+                console.error(error);
+                alert("Erro no Google Login: " + error.message);
             }
-        };
-
-        // --- ALTERNAR LOGIN/CADASTRO ---
-        document.getElementById("btn-alternar").onclick = () => {
-            modoCadastro = !modoCadastro;
-            document.getElementById("area-cadastro").classList.toggle("hidden", !modoCadastro);
-            document.getElementById("btn-principal").innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
-            document.getElementById("btn-alternar").innerHTML = modoCadastro
-                ? "Já tem conta? <span class='text-white underline ml-1'>Fazer Login</span>"
-                : "Não tem conta? <span class='text-white underline ml-1'>Criar agora</span>";
-            document.getElementById("login-subtitle").innerText = modoCadastro ? "Novo Cadastro" : "Gestão Profissional";
         };
 
         // --- LOGIN/CADASTRO E-MAIL ---
@@ -225,25 +209,16 @@
             const senha = document.getElementById("senha").value;
             const nomeBarber = document.getElementById("reg-nome-barbearia").value;
 
-            if (!email || !senha) return alert("Ei, preencha tudo certinho! 👊");
-
-            // Feedback visual para o usuário não clicar duas vezes
-            const btn = document.getElementById("btn-principal");
-            btn.disabled = true;
-            btn.innerText = "Processando...";
+            if (!email || !senha) return alert("Preencha os campos! 👊");
 
             try {
                 if (modoCadastro) {
-                    if (!nomeBarber) throw new Error("Como chama o seu negócio? 🚀");
-
-                    // 1. Cria o usuário no Auth
+                    if (!nomeBarber) throw new Error("Nome do negócio é obrigatório!");
                     const res = await createUserWithEmailAndPassword(auth, email, senha);
 
-                    // 2. Prepara os dados
                     const expira = new Date();
                     expira.setDate(expira.getDate() + 7);
 
-                    // 3. SALVA NO FIRESTORE (Aguardamos o 'await' terminar!)
                     await setDoc(doc(db, "perfis", res.user.uid), {
                         nomeBarbearia: nomeBarber,
                         email: email,
@@ -252,31 +227,15 @@
                         criadoEm: new Date()
                     });
 
-                    console.log("Perfil criado com sucesso!");
-                    // 4. AGORA SIM, REDIRECIONA MANUALMENTE
-                    window.location.href = "index.html";
-
+                    redirecionarUsuario(res.user);
                 } else {
-                    // Login normal
-                    await signInWithEmailAndPassword(auth, email, senha);
-                    window.location.href = "index.html";
+                    const res = await signInWithEmailAndPassword(auth, email, senha);
+                    redirecionarUsuario(res.user);
                 }
             } catch (e) {
-                alert("Opa! " + e.message);
-                btn.disabled = false;
-                btn.innerText = modoCadastro ? "Criar meu Negócio" : "Acessar Painel";
+                alert("Erro: " + e.message);
             }
         };
-
-        // --- MONITORAMENTO DE SESSÃO (MUDOU AQUI!) ---
-        onAuthStateChanged(auth, (user) => {
-            // Só redireciona automaticamente se o usuário JÁ ESTIVER LOGADO quando abrir a página
-            // mas não interfere no processo de cadastro que acabamos de fazer
-            if (user && !modoCadastro) {
-                // Se você quiser que o login automático funcione, deixe assim.
-                // Mas o segredo é o 'await setDoc' lá em cima.
-            }
-        });
     </script>
 </body>
 

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Master - AgendaFacil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: white; }
+        .glass-card { background: rgba(22, 22, 22, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .status-badge-ativo { background: rgba(34, 211, 238, 0.1); color: #22d3ee; border: 1px solid rgba(34, 211, 238, 0.2); }
+        .status-badge-teste { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); }
+        .status-badge-expirado { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        /* Skeleton Loading */
+        .skeleton { background: linear-gradient(90deg, #161616 25%, #1f1f1f 50%, #161616 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Bloqueio de Segurança -->
+    <div id="admin-gate" class="fixed inset-0 bg-black z-[999] flex flex-col items-center justify-center text-center p-6">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-cyan-400 mb-4"></div>
+        <p class="text-neutral-500 font-black uppercase text-[10px] tracking-widest">Verificando Credenciais de Administrador...</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+            <div>
+                <h1 class="text-3xl font-900 italic tracking-tighter">Admin <span class="text-cyan-400">Master</span></h1>
+                <p class="text-[10px] text-neutral-500 font-black uppercase tracking-widest mt-1">Controlo Total da Plataforma</p>
+            </div>
+            <div class="flex gap-3 w-full md:w-auto">
+                <button onclick="location.reload()" class="flex-1 md:flex-none bg-white/5 px-5 py-3 rounded-2xl hover:bg-white/10 transition text-[10px] font-black uppercase tracking-widest border border-white/5">Atualizar</button>
+                <button onclick="window.location.href='index.html'" class="flex-1 md:flex-none bg-cyan-500 text-black px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-cyan-500/20">Sair</button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD STATS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            <div class="glass-card p-8 rounded-[2.5rem]">
+                <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em]">Total de Clientes</p>
+                <h2 id="total-clientes" class="text-4xl font-900 mt-2 italic text-white">--</h2>
+            </div>
+            <div class="glass-card p-8 rounded-[2.5rem]">
+                <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em]">Assinaturas Ativas</p>
+                <h2 id="total-ativos" class="text-4xl font-900 mt-2 italic text-cyan-400">--</h2>
+            </div>
+            <div class="glass-card p-8 rounded-[2.5rem]">
+                <p class="text-neutral-500 text-[9px] font-black uppercase tracking-[0.2em]">Receita Estimada</p>
+                <h2 id="faturamento-previsto" class="text-4xl font-900 mt-2 italic text-emerald-400">R$ 0,00</h2>
+            </div>
+        </div>
+
+        <!-- TABELA DE GESTÃO -->
+        <div class="glass-card rounded-[3rem] overflow-hidden border border-white/5">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/[0.02] text-[9px] text-neutral-500 uppercase font-black tracking-[0.2em]">
+                            <th class="p-6">Barbearia / Responsável</th>
+                            <th class="p-6">Status Atual</th>
+                            <th class="p-6">Vencimento</th>
+                            <th class="p-6 text-right">Ações de Gestão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-clientes-corpo">
+                        <!-- Skeleton Loader -->
+                        <tr><td colspan="4" class="p-10"><div class="h-10 skeleton rounded-xl w-full"></div></td></tr>
+                        <tr><td colspan="4" class="p-10 pt-0"><div class="h-10 skeleton rounded-xl w-full"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCppcnfUc5N4xuWq0UUmg6_idNLY8vRQdw",
+            authDomain: "agendafacil-1.firebaseapp.com",
+            projectId: "agendafacil-1",
+            storageBucket: "agendafacil-1.firebasestorage.app",
+            messagingSenderId: "862585496599",
+            appId: "1:862585496599:web:2a360f1147a334d1342852"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // PRECAUÇÃO 1: IDs de Administradores Autorizados
+        // Substitua pelo SEU UID que aparece no Firebase Auth
+        const ADMIN_UIDS = ["tcEBpPyA9zShUfh9AVwSxfzNgKC3", "Q9iCOeZgGEUVBTr380iliC9wZfm2"]; 
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Verificação de Segurança em Tempo Real
+            // Se não for admin, bloqueia a tela e redireciona
+            if (!ADMIN_UIDS.includes(user.uid)) {
+                document.getElementById('admin-gate').innerHTML = `
+                    <div class="bg-red-500/10 p-8 rounded-3xl border border-red-500/20 max-w-xs">
+                        <p class="text-red-500 font-black uppercase text-xs tracking-widest mb-4">Acesso Negado</p>
+                        <p class="text-neutral-500 text-[10px] leading-relaxed mb-6">O seu ID (${user.uid}) não possui permissões de Administrador Master.</p>
+                        <button onclick="window.location.href='index.html'" class="w-full bg-white text-black p-4 rounded-2xl font-black uppercase text-[10px]">Voltar</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Se for admin, libera o portal
+            document.getElementById('admin-gate').classList.add('hidden');
+            carregarClientes();
+        });
+
+        function carregarClientes() {
+            // Ordenar por data de criação (se existir o campo criadoEm)
+            const q = query(collection(db, "perfis"));
+
+            onSnapshot(q, (snap) => {
+                const tbody = document.getElementById("lista-clientes-corpo");
+                let html = "";
+                let ativos = 0;
+                let total = 0;
+
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-20 text-center opacity-30 font-black uppercase text-[10px] tracking-widest">Nenhuma barbearia registada</td></tr>';
+                    return;
+                }
+
+                snap.forEach(d => {
+                    const c = d.data();
+                    total++;
+                    
+                    const hoje = new Date();
+                    const expira = c.expiraEm ? c.expiraEm.toDate() : null;
+                    const isAtivo = c.statusPagamento === 'ativo';
+                    const isExpirado = expira && hoje > expira && !isAtivo;
+
+                    if (isAtivo) ativos++;
+
+                    let statusClass = isAtivo ? "status-badge-ativo" : (isExpirado ? "status-badge-expirado" : "status-badge-teste");
+                    let statusLabel = isAtivo ? "Assinante PRO" : (isExpirado ? "Plano Expirado" : "Período Teste");
+
+                    html += `
+                        <tr class="border-b border-white/5 hover:bg-white/[0.01] transition">
+                            <td class="p-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center font-black text-cyan-400 border border-cyan-500/10">
+                                        ${(c.nomeBarbearia || 'B').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p class="font-black text-sm text-white italic tracking-tighter">${c.nomeBarbearia || 'Sem Nome'}</p>
+                                        <p class="text-[10px] text-neutral-600 font-bold uppercase tracking-tight">${c.email || 'E-mail não informado'}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-6">
+                                <span class="px-4 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest ${statusClass}">
+                                    ${statusLabel}
+                                </span>
+                            </td>
+                            <td class="p-6">
+                                <p class="text-[11px] font-black ${isExpirado ? 'text-red-500' : 'text-neutral-400'}">
+                                    ${expira ? expira.toLocaleDateString('pt-BR') : '--/--/----'}
+                                </p>
+                            </td>
+                            <td class="p-6 text-right">
+                                <div class="flex gap-2 justify-end">
+                                    <button onclick="window.gerirStatus('${d.id}', 'ativo')" class="h-10 px-4 bg-emerald-500/10 text-emerald-500 rounded-xl text-[9px] font-black uppercase hover:bg-emerald-500/20 transition">Ativar</button>
+                                    <button onclick="window.gerirStatus('${d.id}', 'teste')" class="h-10 px-4 bg-amber-500/10 text-amber-500 rounded-xl text-[9px] font-black uppercase hover:bg-amber-500/20 transition">Reset</button>
+                                    <button onclick="window.removerAcesso('${d.id}')" class="h-10 w-10 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-500/20 transition">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html;
+                document.getElementById("total-clientes").innerText = total;
+                document.getElementById("total-ativos").innerText = ativos;
+                document.getElementById("faturamento-previsto").innerText = `R$ ${(ativos * 19.90).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            });
+        }
+
+        // PRECAUÇÃO 2: Funções com Confirmação Dupla
+        window.gerirStatus = async (uid, status) => {
+            const acao = status === 'ativo' ? 'ATIVAR ASSINATURA PRO' : 'RESETAR PARA TESTE';
+            if (!confirm(`Confirmar ${acao} para este cliente?`)) return;
+
+            try {
+                const docRef = doc(db, "perfis", uid);
+                const novaExpira = new Date();
+                novaExpira.setDate(novaExpira.getDate() + 30); // Adiciona 30 dias
+
+                await updateDoc(docRef, {
+                    statusPagamento: status,
+                    expiraEm: status === 'ativo' ? novaExpira : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 dias se for reset
+                });
+                
+                console.log("Status atualizado com sucesso.");
+            } catch (err) {
+                alert("Erro ao atualizar: " + err.message);
+            }
+        };
+
+        window.removerAcesso = async (uid) => {
+            // PRECAUÇÃO 3: Verificação de Segurança para Exclusão
+            const confirmacao = prompt("Para apagar este cliente, digite 'DELETAR':");
+            if (confirmacao !== 'DELETAR') {
+                alert("Ação cancelada. A palavra de segurança não confere.");
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, "perfis", uid));
+                alert("Perfil removido definitivamente.");
+            } catch (err) {
+                alert("Erro ao remover: " + err.message);
+            }
+        };
+    </script>
+</body>
+</html>
