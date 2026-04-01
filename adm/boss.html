@@ -150,7 +150,7 @@
 
         // PRECAUÇÃO 1: IDs de Administradores Autorizados
         // Substitua pelo SEU UID que aparece no Firebase Auth
-        const ADMIN_UIDS = ["tcEBpPyA9zShUfh9AVwSxfzNgKC3", "Q9iCOeZgGEUVBTr380iliC9wZfm2"];
+        const ADMIN_UIDS = ["bZ9Qf6HXiVTzPYWiIw9q4hy0iH92", "Q9iCOeZgGEUVBTr380iliC9wZfm2"];
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -268,7 +268,7 @@
             // Se estiver na lista, libera o carregamento...
             carregarClientes();
         });
-        
+
         // PRECAUÇÃO 2: Funções com Confirmação Dupla
         window.gerirStatus = async (uid, status) => {
             const acao = status === 'ativo' ? 'ATIVAR ASSINATURA PRO' : 'RESETAR PARA TESTE';
