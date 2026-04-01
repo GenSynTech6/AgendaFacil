@@ -150,7 +150,27 @@
             messagingSenderId: "862585496599",
             appId: "1:862585496599:web:2a360f1147a334d1342852"
         };
+        // --- LÓGICA PARA ALTERNAR ENTRE LOGIN E CADASTRO ---
+        const btnAlternar = document.getElementById("btn-alternar");
+        const areaCadastro = document.getElementById("area-cadastro");
+        const btnPrincipal = document.getElementById("btn-principal");
+        const subtitulo = document.getElementById("login-subtitle");
 
+        btnAlternar.onclick = () => {
+            modoCadastro = !modoCadastro; // Inverte o valor (se era false vira true)
+
+            if (modoCadastro) {
+                areaCadastro.classList.remove("hidden"); // Mostra o campo "Nome do Negócio"
+                btnPrincipal.innerText = "Criar Minha Conta";
+                subtitulo.innerText = "Cadastro de Parceiro";
+                btnAlternar.innerHTML = 'Já tem conta? <span class="text-white underline ml-1">Fazer Login</span>';
+            } else {
+                areaCadastro.classList.add("hidden"); // Esconde o campo
+                btnPrincipal.innerText = "Acessar Painel";
+                subtitulo.innerText = "Gestão Profissional";
+                btnAlternar.innerHTML = 'Não tem conta? <span class="text-white underline ml-1">Criar agora</span>';
+            }
+        };
         // Inicialização Única
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -160,7 +180,7 @@
         let modoCadastro = false;
 
         // 1. LISTA DE ADMINS (Coloque o seu UID aqui também!)
-        const ADMIN_UIDS = ["Tpm1gnLOfLVqO2O83R7SOqJloxr2", "Q9iCOeZgGEUVBTr380iliC9wZfm2"]; 
+        const ADMIN_UIDS = ["Tpm1gnLOfLVqO2O83R7SOqJloxr2", "Q9iCOeZgGEUVBTr380iliC9wZfm2"];
 
         // Função auxiliar para decidir para onde ir
         const redirecionarUsuario = (user) => {
