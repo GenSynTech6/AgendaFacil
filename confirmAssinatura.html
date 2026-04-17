@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assinatura Confirmada - Agenda Fácil</title>
-    <link rel="icon" width="822" href="assets/img/LogoAgendaFacil.png" type="image/x-icon">
+    <link rel="icon"  href="assets/img/LogoAgendaFacil.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -59,6 +59,12 @@
             animation: icon-line-long 0.75s;
         }
 
+        img{
+
+            width: 120px;
+        }
+
+
         @keyframes icon-line-tip {
             0% {
                 width: 0;
@@ -90,7 +96,6 @@
         .btn-teal {
             background: linear-gradient(135deg, #0891b2, #1e3a8a);
         }
-
         @media print {
             .no-print {
                 display: none;
@@ -110,8 +115,9 @@
         <div class="pt-12 pb-6 text-center">
             <div class="success-checkmark mb-6">
                 <div class="check-icon">
-                    <span class="icon-line line-tip"></span>
-                    <span class="icon-line line-long"></span>
+                    <img src="assets/img/iconeAgendaFacil.png" alt="">
+                    <!-- <span class="icon-line line-tip"></span>
+                    <span class="icon-line line-long"></span> -->
                 </div>
             </div>
             <h1 class="text-2xl font-bold italic">Agenda <span class="text-cyan-400">Fácil</span></h1>
