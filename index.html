@@ -54,6 +54,21 @@
         <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-cyan-400"></div>
     </div>
 
+    <div id="modal-boas-vindas"
+        class="hidden fixed inset-0 bg-black/95 z-[600] flex items-center justify-center p-6 backdrop-blur-md transition-opacity duration-300 opacity-0">
+        <div id="modal-content" class="bg-card p-8 rounded-[2.5rem] w-full max-w-sm text-center border border-cyan-500/30 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="text-5xl mb-6">🎉</div>
+            <h2 class="text-2xl font-black text-white mb-2 italic tracking-tighter">Bem-vindo ao <br><span class="text-cyan-400">Agenda Fácil!</span></h2>
+            <p class="text-neutral-400 text-xs mb-8 leading-relaxed uppercase font-bold tracking-widest">
+                Seu sistema de agendamento online. <br><br>Você ganhou <span class="text-cyan-400">7 dias premium</span> para testar o sistema!
+            </p>
+            <button onclick="fecharModalBoasVindas()"
+                class="w-full bg-cyan-500 p-4 rounded-2xl text-black font-black uppercase text-xs tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition">
+                Começar Agora
+            </button>
+        </div>
+    </div>
+
     <div id="bloqueio-pagamento"
         class="hidden fixed inset-0 bg-black/95 z-[500] flex items-center justify-center p-6 backdrop-blur-md">
         <div class="bg-card p-8 rounded-[2.5rem] w-full max-w-sm text-center border border-cyan-500/30 shadow-2xl">
@@ -171,7 +186,21 @@
             signOut(auth).then(() => { window.location.href = "login.html"; });
         };
 
-        // VERIFICAÇÃO DE LOGIN E ASSINATURA
+        // FUNÇÃO PARA FECHAR O MODAL DE BOAS-VINDAS
+        window.fecharModalBoasVindas = () => {
+            const modal = document.getElementById('modal-boas-vindas');
+            const content = document.getElementById('modal-content');
+            
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // Tempo igual ao da animação no tailwind (duration-300)
+        };
+
         // VERIFICAÇÃO DE LOGIN E ASSINATURA
         onAuthStateChanged(auth, async (user) => {
             const loader = document.getElementById("loading");
@@ -206,17 +235,34 @@
                         if (loader) loader.classList.add("hidden");
                         if (dashboard) dashboard.classList.remove("hidden");
 
+                        // Lógica de Boas-Vindas usando localStorage para mostrar apenas 1 vez
+                        if (!localStorage.getItem('agendafacil_boasvindas_visto')) {
+                            const modalBoasVindas = document.getElementById('modal-boas-vindas');
+                            const content = document.getElementById('modal-content');
+                            
+                            modalBoasVindas.classList.remove('hidden');
+                            // Pequeno delay para acionar a transição visual
+                            setTimeout(() => {
+                                modalBoasVindas.classList.remove('opacity-0');
+                                modalBoasVindas.classList.add('opacity-100');
+                                content.classList.remove('scale-95');
+                                content.classList.add('scale-100');
+                            }, 50);
+                            
+                            // Marca como visto no navegador
+                            localStorage.setItem('agendafacil_boasvindas_visto', 'true');
+                        }
+
                         monitorarAssinatura(user.uid);
                         carregarAgenda(user.uid);
 
                     } else {
                         console.error("Perfil não encontrado no Firestore!");
-                        // Se o perfil não existe, talvez precise criar ou deslogar
                         window.location.href = "login.html";
                     }
                 } catch (e) {
                     console.error("Erro ao carregar dados do perfil:", e);
-                    if (loader) loader.classList.add("hidden"); // Tira o loader mesmo se der erro
+                    if (loader) loader.classList.add("hidden"); 
                 }
             } else {
                 window.location.href = "login.html";
