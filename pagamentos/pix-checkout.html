@@ -43,43 +43,38 @@
                 Segundos</p>
         </header>
 
-        <div
-            class="qr-container mx-auto w-64 h-64 flex items-center justify-center shadow-[0_0_50px_rgba(34,211,238,0.15)]">
-            <img id="qr-code-img" src="/assets/img/QRcodeAgendaFacil.png" alt="QR Code PIX"
-                class="w-full h-full object-contain">
+        <div class="qr-container mx-auto w-64 h-64 flex items-center justify-center shadow-[0_0_50px_rgba(34,211,238,0.15)]">
+            <img id="qr-code-img" src="/assets/img/QRcodeAgendaFacil.png" alt="QR Code PIX" class="w-full h-full object-contain">
         </div>
 
         <div class="mt-8 space-y-6">
             <div>
                 <p class="text-[10px] text-neutral-500 font-black uppercase tracking-widest mb-3">Pix Copia e Cola</p>
+            <div>
+                <p class="text-[10px] text-neutral-500 font-black uppercase tracking-widest mb-3">Pix Copia e Cola</p>
                 <div class="relative">
-                    <input id="pix-copy-paste" readonly
-                        class="w-full bg-black/40 border border-white/5 p-4 rounded-2xl text-[10px] font-mono text-neutral-400 outline-none pr-12">
-                    <button onclick="copiarPix()"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400 hover:text-white transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    <input id="pix-copy-paste" readonly="" class="w-full bg-black/40 border border-white/5 p-4 rounded-2xl text-[10px] font-mono text-neutral-400 outline-none pr-12">
+                    <button onclick="copiarPix()" class="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400 hover:text-white transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                         </svg>
                     </button>
                 </div>
             </div>
-            <div class="bg-cyan-400/5 border border-cyan-400/10 p-5 rounded-[2rem]">
-                <h1 class="text-[12px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-1">Me mande o pagamento
-                    nesse mesmo numero</h1>
-                <p class="text-xs text-neutral-400"><span class="text-red-500 font-bold">IMPORTANTE:</span> ME INFORME
-                    SEU EMAIL, NOME E COMPROVANTE</p>
             </div>
+            <div class="bg-cyan-400/5 border border-cyan-400/10 p-5 rounded-[2rem]">
+                <h1 class="text-[12px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-1">Me mande o pagamento nesse mesmo numero</h1>
+                <p class="text-xs text-neutral-400"><span class="text-red-500 font-bold">IMPORTANTE:</span> ME INFORME NESSE EMAIL SEU NOME E COMPROVANTE</p>
+               <p class="text-xs text-neutral-400"><span class="text-red-500 font-bold">agendafacil.buzz@gmail.com</span></p>
+            </div>  
             <!-- <div class="bg-cyan-400/5 border border-cyan-400/10 p-5 rounded-[2rem]">
                 <p class="text-[9px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-1">Aguardando Pagamento</p>
                 <p class="text-xs text-neutral-400">Após pagar, seu acesso será liberado <br> automaticamente em até 1
                     minuto.</p>
             </div> -->
 
-            <a href='https://agendafacil.buzz/pagamentos/confirmAssinatura.html' target="_blank">
-                <button
-                    class="gradient-cyan w-full py-5 rounded-[2rem] text-black font-900 uppercase text-xs tracking-[0.2em] active:scale-95 transition-all shadow-xl shadow-cyan-500/10">
+            <a href='https://agendafacil.buzz/confirmAssinatura.html' target="_blank">
+                <button class="gradient-cyan w-full py-5 rounded-[2rem] text-black font-900 uppercase text-xs tracking-[0.2em] active:scale-95 transition-all shadow-xl shadow-cyan-500/10">
                     Já realizei o pagamento
                 </button>
             </a>
@@ -146,31 +141,12 @@
         }, 1000);
 
         // Função Copiar
-        // Função Copiar Robusta (Funciona em HTTP, HTTPS e Mobile)
-        window.copiarPix = async () => {
-            const copyText = document.getElementById("pix-copy-paste");
-
-            try {
-                // Verifica se a API de Clipboard moderna está disponível (requer HTTPS)
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(copyText.value);
-                    alert("Código PIX copiado! 🚀");
-                } else {
-                    // Fallback (Plano B) para HTTP ou navegadores restritos
-                    copyText.select();
-                    copyText.setSelectionRange(0, 99999); // Essencial para funcionar no celular
-                    document.execCommand("copy");
-
-                    // Remove a seleção visual depois de copiar
-                    window.getSelection().removeAllRanges();
-
-                    alert("Código PIX copiado! 🚀");
-                }
-            } catch (err) {
-                console.error("Erro ao copiar o PIX: ", err);
-                alert("Erro ao copiar automaticamente. Por favor, selecione o texto e copie manualmente.");
-            }
-        };
+            window.copiarPix = () => {
+                const copyText = document.getElementById("pix-copy-paste");
+                copyText.select();
+                navigator.clipboard.writeText(copyText.value);
+                alert("Código PIX copiado! 🚀");
+            };
     </script>
 </body>
 
