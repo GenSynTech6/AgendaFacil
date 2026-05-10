@@ -1,14 +1,32 @@
 import { setGlobalOptions } from "firebase-functions";
-import { onRequest } from "firebase-functions/v2/https";
-import { initializeApp, firestore } from "firebase-admin";
+import { onRequest, onCall, HttpsError } from "firebase-functions/v2/https";
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
-import { onCall, HttpsError } from "firebase-functions/v2/https";
 
-initializeApp();
+// 1. INICIALIZAÇÃO ÚNICA E SEGURA
+// Verifica se já existe uma app inicializada para evitar erros de re-inicialização
+if (!getApps().length) {
+    initializeApp();
+}
 
-setGlobalOptions({ maxInstances: 10, region: "us-central1" });
-const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+const db = getFirestore();
 
+// 2. CONFIGURAÇÕES GLOBAIS
+setGlobalOptions({ 
+    maxInstances: 10, 
+    region: "us-central1",
+    timeoutSeconds: 60 // Aumenta o tempo de execução da função se necessário
+});
+
+// Inicialização do cliente MP fora das funções para reutilização de instância
+const client = new MercadoPagoConfig({ 
+    accessToken: process.env.MP_ACCESS_TOKEN || 'SEU_TOKEN_AQUI' 
+});
+
+/**
+ * WEBHOOK: Recebe notificações do Mercado Pago
+ */
 export const hookMercadoPago = onRequest({ cors: true }, async (req, res) => {
     // O Mercado Pago envia o ID do pagamento no corpo ou na query
     const paymentId = req.body.data?.id || req.query['data.id'];
@@ -18,19 +36,18 @@ export const hookMercadoPago = onRequest({ cors: true }, async (req, res) => {
             const payment = new Payment(client);
             const result = await payment.get({ id: paymentId });
 
-            // Se o status mudou para aprovado
             if (result.status === 'approved') {
-                // Lembra do metadata que a gente colocou na outra função?
-                const userId = result.metadata.user_id;
+                const userId = result.metadata?.user_id;
 
                 if (userId) {
                     const expira = new Date();
                     expira.setMonth(expira.getMonth() + 1);
 
-                    await firestore().collection("perfis").doc(userId).update({
+                    // USO DO DB (Firestore) CORRIGIDO
+                    await db.collection("perfis").doc(userId).update({
                         statusPagamento: "ativo",
                         expiraEm: expira,
-                        ultimoPagamento: firestore.FieldValue.serverTimestamp(),
+                        ultimoPagamento: FieldValue.serverTimestamp(),
                         idTransacaoMP: result.id
                     });
 
@@ -42,29 +59,34 @@ export const hookMercadoPago = onRequest({ cors: true }, async (req, res) => {
         }
     }
 
-    // O Mercado Pago exige que você responda 200 ou 201 sempre
+    // O Mercado Pago exige 200 ou 201 sempre
     res.status(200).send("OK");
 });
+
+/**
+ * CALLABLE: Processa o pagamento vindo do App/Web
+ */
 export const processarPagamento = onCall({ cors: true }, async (request) => {
+    // Verificação de autenticação
     if (!request.auth) {
-        throw new HttpsError('unauthenticated', 'Usuário não logado.');
+        throw new HttpsError('unauthenticated', 'Operador não identificado no sistema.');
     }
 
     const data = request.data;
     const payment = new Payment(client);
     const valorDoSistema = 19.90;
 
-    // Validação de segurança do valor
+    // Proteção contra manipulação de valor no front-end
     if (parseFloat(data.amount) !== valorDoSistema) {
-        console.error(`Tentativa de bypass de valor: ${request.auth.uid}`);
-        throw new HttpsError('invalid-argument', 'Valor inconsistente.');
+        console.error(`Tentativa de bypass de valor detectada: ${request.auth.uid}`);
+        throw new HttpsError('invalid-argument', 'Protocolo de valor inconsistente.');
     }
 
-    // MONTAGEM DINÂMICA DO BODY
     const body = {
         transaction_amount: valorDoSistema,
-        description: data.description || "Plano Profissional Agenda Fácil",
+        description: data.description || "Plano Profissional - Agenda Fácil",
         payment_method_id: data.payment_method_id,
+        installments: parseInt(data.installments) || 1,
         payer: {
             email: data.email,
             identification: {
@@ -72,32 +94,30 @@ export const processarPagamento = onCall({ cors: true }, async (request) => {
                 number: data.identificationNumber
             }
         },
-        // Metadata é a chave para o Webhook saber quem pagou depois
         metadata: {
             user_id: request.auth.uid
         }
     };
 
-    // Se for CARTÃO, adicionamos os campos específicos
+    // Adiciona o token se não for PIX
     if (data.payment_method_id !== 'pix') {
         body.token = data.token;
-        body.installments = parseInt(data.installments) || 1;
         body.issuer_id = data.issuer_id;
     }
 
     try {
         const result = await payment.create({ body });
 
-        // 1. SE FOR CARTÃO E FOR APROVADO NA HORA
+        // 1. APROVAÇÃO IMEDIATA (Cartão)
         if (result.status === 'approved') {
             const expira = new Date();
             expira.setMonth(expira.getMonth() + 1);
 
-            await firestore().collection("perfis").doc(request.auth.uid).update({
+            await db.collection("perfis").doc(request.auth.uid).update({
                 statusPagamento: "ativo",
                 planoAtivo: body.description,
                 expiraEm: expira,
-                ultimoPagamento: firestore.FieldValue.serverTimestamp(),
+                ultimoPagamento: FieldValue.serverTimestamp(),
                 idTransacaoMP: result.id,
                 metodoPagamento: result.payment_method_id
             });
@@ -105,19 +125,18 @@ export const processarPagamento = onCall({ cors: true }, async (request) => {
             return { success: true, id: result.id, status: 'approved' };
         }
 
-        // 2. SE FOR PIX (O status inicial é 'pending')
+        // 2. AGUARDANDO PAGAMENTO (PIX)
         if (result.payment_method_id === 'pix' && result.status === 'pending') {
             return {
                 success: true,
                 status: 'pending',
                 id: result.id,
-                // Dados para o seu pix-checkout.html
                 qr_code: result.point_of_interaction.transaction_data.qr_code_base64,
                 copy_paste: result.point_of_interaction.transaction_data.qr_code
             };
         }
 
-        // 3. SE FOR RECUSADO
+        // 3. FALHA NO PROCESSAMENTO
         return {
             success: false,
             status: result.status,
@@ -125,10 +144,10 @@ export const processarPagamento = onCall({ cors: true }, async (request) => {
         };
 
     } catch (error) {
-        console.error("ERRO MP:", error);
+        console.error("ERRO CRÍTICO MP:", error);
         return {
             success: false,
-            error: "Erro ao processar pagamento. Verifique os dados."
+            error: "Falha na comunicação com o provedor de pagamentos."
         };
     }
 });
