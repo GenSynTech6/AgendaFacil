@@ -45,7 +45,8 @@
 
         <div
             class="qr-container mx-auto w-64 h-64 flex items-center justify-center shadow-[0_0_50px_rgba(34,211,238,0.15)]">
-            <img id="qr-code-img" src="../assets/img/QRcodeAgendaFacil.png" alt="QR Code PIX" class="w-full h-full object-contain">
+            <img id="qr-code-img" src="../assets/img/QRcodeAgendaFacil.png" alt="QR Code PIX"
+                class="w-full h-full object-contain">
         </div>
 
         <div class="mt-8 space-y-6">
@@ -65,8 +66,10 @@
                 </div>
             </div>
             <div class="bg-cyan-400/5 border border-cyan-400/10 p-5 rounded-[2rem]">
-                <h1 class="text-[12px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-1">Me mande o pagamento nesse mesmo numero</h1>
-                <p class="text-xs text-neutral-400"><span class="text-red-500 font-bold">IMPORTANTE:</span> ME INFORME SEU EMAIL, NOME E COMPROVANTE</p>
+                <h1 class="text-[12px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-1">Me mande o pagamento
+                    nesse mesmo numero</h1>
+                <p class="text-xs text-neutral-400"><span class="text-red-500 font-bold">IMPORTANTE:</span> ME INFORME
+                    SEU EMAIL, NOME E COMPROVANTE</p>
             </div>
             <!-- <div class="bg-cyan-400/5 border border-cyan-400/10 p-5 rounded-[2rem]">
                 <p class="text-[9px] text-cyan-400 font-black uppercase tracking-[0.2em] mb-1">Aguardando Pagamento</p>
@@ -75,7 +78,8 @@
             </div> -->
 
             <a href='https://agendafacil.buzz/confirmAssinatura.html' target="_blank">
-                <button class="gradient-cyan w-full py-5 rounded-[2rem] text-black font-900 uppercase text-xs tracking-[0.2em] active:scale-95 transition-all shadow-xl shadow-cyan-500/10">
+                <button
+                    class="gradient-cyan w-full py-5 rounded-[2rem] text-black font-900 uppercase text-xs tracking-[0.2em] active:scale-95 transition-all shadow-xl shadow-cyan-500/10">
                     Já realizei o pagamento
                 </button>
             </a>
@@ -142,11 +146,30 @@
         }, 1000);
 
         // Função Copiar
-        window.copiarPix = () => {
+        // Função Copiar Robusta (Funciona em HTTP, HTTPS e Mobile)
+        window.copiarPix = async () => {
             const copyText = document.getElementById("pix-copy-paste");
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value);
-            alert("Código PIX copiado! 🚀");
+
+            try {
+                // Verifica se a API de Clipboard moderna está disponível (requer HTTPS)
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(copyText.value);
+                    alert("Código PIX copiado! 🚀");
+                } else {
+                    // Fallback (Plano B) para HTTP ou navegadores restritos
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999); // Essencial para funcionar no celular
+                    document.execCommand("copy");
+
+                    // Remove a seleção visual depois de copiar
+                    window.getSelection().removeAllRanges();
+
+                    alert("Código PIX copiado! 🚀");
+                }
+            } catch (err) {
+                console.error("Erro ao copiar o PIX: ", err);
+                alert("Erro ao copiar automaticamente. Por favor, selecione o texto e copie manualmente.");
+            }
         };
     </script>
 </body>
